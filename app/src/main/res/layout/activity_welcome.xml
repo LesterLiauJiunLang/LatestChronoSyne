@@ -3,29 +3,29 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:gravity="center"
         android:background="@color/primary_color">  <!-- Set Background Color -->
 
-        <ImageView
-            android:id="@+id/welcome_image"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
-            android:src="@drawable/chronologo"
-            android:contentDescription="Chrono_Logo"
-            android:scaleType="fitCenter"/>
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="ChronoSyne"
-            android:textSize="34sp"
+            android:padding="15dp"
+            android:text="Welcome"
             android:textColor="@color/secondary_color"
-            android:textStyle="italic"
-            android:padding="16dp"/>
+            android:textSize="48sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/welcome_image"
+            android:layout_width="327dp"
+            android:layout_height="298dp"
+            android:contentDescription="Chrono_Logo"
+            android:scaleType="fitCenter"
+            android:src="@drawable/chronologo" />
 
         <TextView
             android:layout_width="wrap_content"

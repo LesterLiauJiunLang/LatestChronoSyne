@@ -12,36 +12,58 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.chronosyne.ui.theme.ChronoSyneTheme
+import android.content.Intent
+import android.os.Handler
+import android.os.Looper
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.painterResource
+
 
 class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            startActivity(Intent(this, MainActivity::class.java))
+            finish() // Close SplashActivity so it doesn't stay in the back stack
+        }, 2000)
+
         enableEdgeToEdge()
         setContent {
             ChronoSyneTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting3(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                SplashScreen()
             }
         }
     }
 }
 
 @Composable
-fun Greeting3(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
+fun SplashScreen() {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.primary
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.chronologo), // Replace with your logo
+                contentDescription = "Splash Screen Logo",
+                modifier = Modifier.wrapContentSize()
+            )
+        }
+    }
 }
-
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview3() {
+fun SplashScreenPreview() {
     ChronoSyneTheme {
-        Greeting3("Android")
+        SplashScreen()
     }
 }
