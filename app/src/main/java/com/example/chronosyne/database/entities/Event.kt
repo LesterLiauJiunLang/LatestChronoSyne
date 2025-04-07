@@ -1,4 +1,4 @@
-package com.example.chronosyne.database
+package com.example.chronosyne.database.entities
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
