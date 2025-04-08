@@ -10,6 +10,15 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material3.Typography
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import com.example.chronosyne.R
+import androidx.compose.ui.unit.sp
+
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -33,6 +42,33 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
+private val playfairDisplayFontFamily = FontFamily(
+    Font(R.font.playfairdisplay_regular),
+    Font(R.font.playfairdisplay_bold, FontWeight.Bold),
+    Font(R.font.playfairdisplay_italic, style = FontStyle.Italic)
+)
+
+private val CustomTypography = Typography(
+    displayLarge = TextStyle(
+        fontFamily = playfairDisplayFontFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 48.sp
+    ),
+    headlineMedium = TextStyle(
+        fontFamily = playfairDisplayFontFamily,
+        fontWeight = FontWeight.Bold,
+        fontSize = 24.sp
+    ),
+    bodyMedium = TextStyle(
+        fontFamily = playfairDisplayFontFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp
+    )
+    // You can add more styles as needed
+)
+
+
+
 @Composable
 fun ChronoSyneTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -52,7 +88,8 @@ fun ChronoSyneTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = CustomTypography, // use the custom one you just made
         content = content
     )
+
 }
