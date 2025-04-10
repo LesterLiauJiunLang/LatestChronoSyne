@@ -49,7 +49,7 @@ class SplashActivity : ComponentActivity() {
         Handler(Looper.getMainLooper()).postDelayed({
             startActivity(Intent(this, MainActivity::class.java))
             finish() // Close SplashActivity so it doesn't stay in the back stack
-        }, 2000)
+        }, 3000)
 
         enableEdgeToEdge()
         setContent {
@@ -76,7 +76,10 @@ fun SplashScreen() {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
-        ) {
+        ) { AnimatedVisibility(
+                visible = visible,
+        enter = fadeIn(animationSpec = tween(durationMillis = 1500)) // 1.5s fade-in
+        ){
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -88,7 +91,7 @@ fun SplashScreen() {
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "ChonoSyne",
+                    text = "ChronoSyne",
                     style = MaterialTheme.typography.displayLarge.copy(
                         fontStyle = FontStyle.Italic,
                         color = Color(0xFFb29985)
@@ -99,10 +102,4 @@ fun SplashScreen() {
         }
     }
 }
-@Preview(showBackground = true)
-@Composable
-fun SplashScreenPreview() {
-    ChronoSyneTheme {
-        SplashScreen()
     }
-}

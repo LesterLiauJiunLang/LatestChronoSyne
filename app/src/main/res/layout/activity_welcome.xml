@@ -10,14 +10,17 @@
         android:gravity="center"
         android:background="@color/primary_color">  <!-- Set Background Color -->
 
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="15dp"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/playfairdisplay_regular"
+            android:padding="10dp"
+            android:paddingTop="50dp"
             android:text="Welcome"
             android:textColor="@color/secondary_color"
-            android:textSize="48sp"
-            android:textStyle="bold" />
+            android:textSize="48sp" />
 
         <ImageView
             android:id="@+id/welcome_image"
@@ -27,14 +30,7 @@
             android:scaleType="fitCenter"
             android:src="@drawable/chronologo" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="plan and track events"
-            android:textSize="18sp"
-            android:textColor="@color/third_color"
-            android:fontFamily="sans-serif"
-            android:padding="16dp"/>
+       
 
     </LinearLayout>
 
