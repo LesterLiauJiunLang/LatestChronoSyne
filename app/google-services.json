@@ -12,7 +12,12 @@
           "package_name": "com.example.chronosyne"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "674544625708-705ka2lvmsdid5960dipqtriij2u477s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDRofpy9GgeXR4_5y-CJXpWQfKKdNp5Dtw"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "674544625708-705ka2lvmsdid5960dipqtriij2u477s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
