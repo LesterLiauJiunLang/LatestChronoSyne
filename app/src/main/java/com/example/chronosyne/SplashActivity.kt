@@ -47,7 +47,7 @@ class SplashActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         Handler(Looper.getMainLooper()).postDelayed({
-            startActivity(Intent(this, MainActivity::class.java))
+            startActivity(Intent(this, WelcomeActivity::class.java))
             finish() // Close SplashActivity so it doesn't stay in the back stack
         }, 3000)
 
