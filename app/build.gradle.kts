@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp") version "2.1.10-1.0.31"
+    id("com.google.gms.google-services") version "4.4.2" apply false
 }
 
 android {
@@ -62,8 +63,9 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     annotationProcessor(libs.dagger.compiler)
-    ksp(libs.dagger.compiler)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler) // 👈 Annotation processor using KSP
+    implementation(libs.firebase.bom)
+    implementation(libs.firebase.analytics)
 }
