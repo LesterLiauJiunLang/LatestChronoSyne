@@ -2,6 +2,7 @@
     <string name="app_name">ChronoSyne</string>
 
     <string name="default_web_client_id">674544625708-705ka2lvmsdid5960dipqtriij2u477s.apps.googleusercontent.com</string>
+    <string name="firebase_web_api_key">AIzaSyDRofpy9GgeXR4_5y-CJXpWQfKKdNp5Dtw</string>
 
     <string name="title_activity_welcome">WelcomeActivity</string>
     <string name="title_activity_splash">SplashActivity</string>

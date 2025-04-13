@@ -70,4 +70,6 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.play.services.auth)
+    implementation(libs.facebook.android)
+    implementation(libs.firebase.auth.facebook)
 }

@@ -11,7 +11,7 @@ lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.1"
 firebase-auth = "23.2.0"
 play-services-auth = "21.3.0"
-
+facebook-android = "18.0.2"
 composeBom = "2025.04.00"
 appcompat = "1.7.0"
 material = "1.12.0"
@@ -53,6 +53,8 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebase-auth" }
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "play-services-auth" }
 
+facebook-android = { group = "com.facebook.android", name = "facebook-android-sdk", version.ref = "facebook-android" }
+firebase-auth-facebook = { group = "com.firebaseui", name = "firebase-ui-auth-facebook", version = "8.0.2" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
