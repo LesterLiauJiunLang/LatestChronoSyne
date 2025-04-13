@@ -1,25 +1,17 @@
 package com.example.chronosyne.database
 
 import androidx.room.Entity
-import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.util.Date
 
 @Entity(
     tableName = "events",
-    foreignKeys = [ForeignKey(
-        entity = User::class,
-        parentColumns = ["userId"],
-        childColumns = ["userId"],
-        onDelete = ForeignKey.CASCADE
-    )],
-    indices = [Index("userId")]
+    indices = [Index("userId")]  // Keep index for query performance
 )
-
 data class Event(
     @PrimaryKey(autoGenerate = true) val eventId: Int = 0,
-    val userId: Int,
+    val userId: String,  // Changed from Int to String (Firebase UID)
     val title: String,
     val description: String?,
     val location: String?,

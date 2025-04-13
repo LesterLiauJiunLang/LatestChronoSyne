@@ -66,10 +66,9 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler) // 👈 Annotation processor using KSP
-    implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.play.services.auth)
-    implementation(libs.facebook.android)
-    implementation(libs.firebase.auth.facebook)
+    implementation(platform(libs.firebase.bom.v3280))
+    implementation(libs.google.firebase.auth.ktx)
 }
