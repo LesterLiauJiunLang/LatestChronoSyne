@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "674544625708",
+    "project_id": "chronosyne-c4c13",
+    "storage_bucket": "chronosyne-c4c13.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:674544625708:android:2f3257bd0a0d404ef64989",
+        "android_client_info": {
+          "package_name": "com.example.chronosyne"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRofpy9GgeXR4_5y-CJXpWQfKKdNp5Dtw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
