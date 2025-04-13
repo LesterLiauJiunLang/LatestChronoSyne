@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">ChronoSyne</string>
+    <string name="title_activity_welcome">WelcomeActivity</string>
+    <string name="title_activity_splash">SplashActivity</string>
 </resources>

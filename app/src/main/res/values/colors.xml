@@ -10,6 +10,7 @@
 
     <color name="primary_color">#282828</color>
     <color name="secondary_color">#b29985</color>
+    <color name="third_color">#d7c5b7</color>
 
 
 </resources>
