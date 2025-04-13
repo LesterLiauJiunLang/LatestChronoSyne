@@ -1,4 +1,11 @@
 package com.example.chronosyne
 
-class LoginActivity {
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+
+class LoginActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // setContentView or setContent if using Compose
+    }
 }
