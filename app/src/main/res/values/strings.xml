@@ -1,5 +1,9 @@
 <resources>
     <string name="app_name">ChronoSyne</string>
+
+    <string name="default_web_client_id">674544625708-705ka2lvmsdid5960dipqtriij2u477s.apps.googleusercontent.com</string>
+
     <string name="title_activity_welcome">WelcomeActivity</string>
     <string name="title_activity_splash">SplashActivity</string>
+
 </resources>
