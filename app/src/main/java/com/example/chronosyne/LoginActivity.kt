@@ -32,6 +32,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
+import androidx.wear.compose.material.Colors
 
 
 class LoginActivity : AppCompatActivity() {
@@ -94,12 +95,13 @@ fun LoginScreen(){
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
                     singleLine = true,
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
+                        unfocusedTextColor = Color.LightGray,
                         focusedPlaceholderColor = Color.LightGray,
-                        unfocusedPlaceholderColor = Color.LightGray,
-                        containerColor = Color.Transparent
+                        unfocusedPlaceholderColor = Color.White,
+                        focusedBorderColor = colorResource(id = R.color.main_color),
+                        unfocusedBorderColor = colorResource(id = R.color.lighter_main_color)
                     )
                 )
 
@@ -113,12 +115,13 @@ fun LoginScreen(){
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
+                        unfocusedTextColor = Color.LightGray,
                         focusedPlaceholderColor = Color.LightGray,
-                        unfocusedPlaceholderColor = Color.LightGray,
-                        containerColor = Color.Transparent
+                        unfocusedPlaceholderColor = Color.White,
+                        focusedBorderColor = colorResource(id = R.color.main_color),
+                        unfocusedBorderColor = colorResource(id = R.color.lighter_main_color)
                     )
                 )
 
