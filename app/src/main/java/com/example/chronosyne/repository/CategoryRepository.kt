@@ -13,7 +13,7 @@ class CategoryRepository @Inject constructor(
 ) {
     // Flow version for real-time updates
     fun getCategoriesForUser(userId: String): Flow<List<Category>> =
-        categoryDao.getCategoriesForUser(userId)
+        categoryDao.getCategoriesByUser(userId)
 
     // Suspended version for one-time fetch
     suspend fun getCategoryWithEvents(categoryId: Int): CategoryWithEvents =
@@ -25,7 +25,7 @@ class CategoryRepository @Inject constructor(
         if (category.userId != currentUserId) {
             throw SecurityException("User does not own this category")
         }
-        categoryDao.insert(category)
+        categoryDao.insertCategory(category)
     }
 
     // New: Delete with validation
@@ -33,11 +33,7 @@ class CategoryRepository @Inject constructor(
         if (category.userId != currentUserId) {
             throw SecurityException("Cannot delete other users' categories")
         }
-        categoryDao.delete(category)
+        categoryDao.deleteCategory(category)
     }
 
-    // New: Batch insert with transaction
-    suspend fun insertInitialCategories(categories: List<Category>) {
-        categoryDao.insertAll(*categories.toTypedArray())
-    }
 }
