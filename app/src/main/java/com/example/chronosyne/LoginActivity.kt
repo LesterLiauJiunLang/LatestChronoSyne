@@ -1,6 +1,8 @@
 package com.example.chronosyne
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Patterns
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedVisibility
@@ -8,31 +10,14 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -43,10 +28,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.chronosyne.repository.UserRepository
 import com.example.chronosyne.ui.theme.ChronoSyneTheme
-import android.content.Intent
-import androidx.compose.ui.platform.LocalContext
-
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import kotlinx.coroutines.*
 
 class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,7 +47,7 @@ class LoginActivity : AppCompatActivity() {
 }
 
 val PlayfairFontFamily = FontFamily(
-    Font(R.font.playfairdisplay_regular)  // Adjust the file name to match your font
+    Font(R.font.playfairdisplay_regular)
 )
 
 val RalewayFontFamily = FontFamily(
@@ -71,14 +56,16 @@ val RalewayFontFamily = FontFamily(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(){
+fun LoginScreen() {
     var showForm by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-
+    var accountNotFound by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
+    var inputError by remember { mutableStateOf("") }
     val context = LocalContext.current
+    val userRepository = remember { UserRepository() }
 
-    // Automatically show form on load
     LaunchedEffect(Unit) {
         showForm = true
     }
@@ -86,14 +73,19 @@ fun LoginScreen(){
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF282828)) // Replace with your primary_color
+            .background(Color(0xFF282828))
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Sign In", style = TextStyle(
-            fontFamily = PlayfairFontFamily, fontSize = 48.sp ,fontStyle = FontStyle.Italic, color = Color(0xFFb29985)
-        )
+        Text(
+            "Sign In",
+            style = TextStyle(
+                fontFamily = PlayfairFontFamily,
+                fontSize = 48.sp,
+                fontStyle = FontStyle.Italic,
+                color = Color(0xFFb29985)
+            )
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -106,7 +98,10 @@ fun LoginScreen(){
             Column {
                 OutlinedTextField(
                     value = email,
-                    onValueChange = { email = it },
+                    onValueChange = {
+                        email = it
+                        inputError = ""
+                    },
                     placeholder = { Text("email@domain.com") },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -125,7 +120,10 @@ fun LoginScreen(){
 
                 OutlinedTextField(
                     value = password,
-                    onValueChange = { password = it },
+                    onValueChange = {
+                        password = it
+                        inputError = ""
+                    },
                     placeholder = { Text("password") },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -143,14 +141,79 @@ fun LoginScreen(){
                     )
                 )
 
+                if (inputError.isNotEmpty()) {
+                    Text(
+                        inputError,
+                        color = Color.Red,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
+                if (accountNotFound) {
+                    Text(
+                        "Account does not exist",
+                        color = Color.Red,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+
+                    TextButton(onClick = {
+                        context.startActivity(Intent(context, SignupActivity::class.java))
+                    }) {
+                        Text(
+                            "Sign Up",
+                            style = TextStyle(
+                                fontFamily = RalewayFontFamily,
+                                fontSize = 12.sp,
+                                color = Color(0xFFb29985)
+                            )
+                        )
+                    }
+                }
+
                 TextButton(onClick = { /* TODO: Forgot Password Logic */ }) {
-                    Text("Forgot Password?", style = TextStyle(
-                        fontFamily = RalewayFontFamily, fontSize = 12.sp , fontStyle = FontStyle.Italic, color = Color(0xFFb29985))
+                    Text(
+                        "Forgot Password?",
+                        style = TextStyle(
+                            fontFamily = RalewayFontFamily,
+                            fontSize = 12.sp,
+                            fontStyle = FontStyle.Italic,
+                            color = Color(0xFFb29985)
+                        )
                     )
                 }
 
                 Button(
-                    onClick = { /* TODO: Continue login */ },
+                    onClick = {
+                        if (email.isBlank() || password.isBlank()) {
+                            inputError = "Please enter your email and password"
+                        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                            inputError = "Please enter a valid email address"
+                        } else {
+                            isLoading = true
+                            accountNotFound = false
+                            inputError = ""
+
+                            CoroutineScope(Dispatchers.IO).launch {
+                                try {
+                                    userRepository.loginWithEmail(email, password)
+                                    withContext(Dispatchers.Main) {
+                                        isLoading = false
+                                        // Handle successful login here
+                                    }
+                                } catch (e: FirebaseAuthInvalidUserException) {
+                                    withContext(Dispatchers.Main) {
+                                        isLoading = false
+                                        accountNotFound = true
+                                    }
+                                } catch (e: Exception) {
+                                    withContext(Dispatchers.Main) {
+                                        isLoading = false
+                                        inputError = "Account does not exist"
+                                    }
+                                }
+                            }
+                        }
+                    },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,
                         contentColor = Color.Black
@@ -159,36 +222,17 @@ fun LoginScreen(){
                         .fillMaxWidth()
                         .padding(top = 17.dp)
                 ) {
-                    Text(
-                        "CONTINUE",
-                        style = TextStyle(
-                            fontFamily = RalewayFontFamily,
-                            fontSize = 12.sp,
+                    if (isLoading) {
+                        CircularProgressIndicator(color = Color.Black)
+                    } else {
+                        Text(
+                            "CONTINUE",
+                            style = TextStyle(
+                                fontFamily = RalewayFontFamily,
+                                fontSize = 12.sp
+                            )
                         )
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Button(
-                    onClick = {
-                        context.startActivity(Intent(context, WelcomeActivity::class.java))
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp)
-                ) {
-                    Text(
-                        "BACK",
-                        style = TextStyle(
-                            fontFamily = RalewayFontFamily,
-                            fontSize = 12.sp
-                        )
-                    )
+                    }
                 }
             }
         }
