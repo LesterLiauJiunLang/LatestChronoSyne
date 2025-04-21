@@ -55,6 +55,10 @@ val RalewayFontFamily = FontFamily(
     Font(R.font.raleway_regular)
 )
 
+val RobotoFontFamily = FontFamily(
+    Font(R.font.robotomono_regular)
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen() {
@@ -103,7 +107,10 @@ fun LoginScreen() {
                         email = it
                         inputError = ""
                     },
-                    placeholder = { Text("email@domain.com") },
+                    placeholder = { Text(
+                        "email@domain.com",
+                        fontFamily = RobotoFontFamily
+                        ) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
@@ -125,7 +132,10 @@ fun LoginScreen() {
                         password = it
                         inputError = ""
                     },
-                    placeholder = { Text("password") },
+                    placeholder = { Text(
+                        "password123",
+                        fontFamily = RobotoFontFamily
+                    ) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
@@ -144,8 +154,10 @@ fun LoginScreen() {
 
                 if (inputError.isNotEmpty()) {
                     Text(
-                        inputError,
+                        text = inputError,
                         color = Color.Red,
+                        fontSize = 14.sp,
+                        fontFamily = RalewayFontFamily,
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
                 }
