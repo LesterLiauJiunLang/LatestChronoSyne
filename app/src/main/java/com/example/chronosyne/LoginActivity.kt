@@ -32,6 +32,7 @@ import com.example.chronosyne.repository.UserRepository
 import com.example.chronosyne.ui.theme.ChronoSyneTheme
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import kotlinx.coroutines.*
+import kotlin.jvm.java
 
 class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
