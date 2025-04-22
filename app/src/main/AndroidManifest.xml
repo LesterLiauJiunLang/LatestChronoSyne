@@ -21,10 +21,10 @@
             android:exported="true"
             android:label="@string/title_activity_splash"
             android:theme="@style/Theme.ChronoSyne">
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
 
         <activity
@@ -49,6 +49,18 @@
             android:name=".LoginActivity"
             android:exported="true"
             android:theme="@style/Theme.ChronoSyne"/>
+
+        <activity
+            android:name=".SignupActivity"
+            android:exported="true"
+            android:theme="@style/Theme.ChronoSyne"/>
+
+        <activity
+            android:name=".UsernameActivity"
+            android:exported="true"
+            android:theme="@style/Theme.ChronoSyne"/>
+
+
 
         <meta-data
             android:name="com.google.android.gms.version"

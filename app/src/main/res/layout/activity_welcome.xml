@@ -35,10 +35,11 @@
             android:layout_width="260dp"
             android:layout_height="60dp"
             android:layout_marginTop="24dp"
-            android:background="@drawable/rounded_button"
+            android:backgroundTint="@color/main_color"
             android:text="SIGN IN"
             android:fontFamily="@font/raleway_regular"
             android:textColor="@android:color/white"
+            android:textAlignment="center"
             android:textSize="18sp" />
 
         <Button
@@ -46,10 +47,11 @@
             android:layout_width="260dp"
             android:layout_height="60dp"
             android:layout_marginTop="12dp"
-            android:background="@drawable/rounded_button"
+            android:backgroundTint="@color/main_color"
             android:text="SIGN UP"
             android:fontFamily="@font/raleway_regular"
             android:textColor="@android:color/white"
+            android:textAlignment="center"
             android:textSize="18sp" />
 
 
