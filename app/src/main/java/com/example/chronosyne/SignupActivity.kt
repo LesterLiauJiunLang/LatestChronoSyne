@@ -93,7 +93,7 @@ class SignupActivity : AppCompatActivity() {
 
                     withContext(Dispatchers.Main) {
                         if (result.isSuccess) {
-                            val intent = Intent(this@SignupActivity, MainActivity::class.java)
+                            val intent = Intent(this@SignupActivity, UsernameActivity::class.java)
                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                             startActivity(intent)
                             finish()
@@ -118,9 +118,11 @@ class SignupActivity : AppCompatActivity() {
         }
 
         setContent {
+            val key = System.currentTimeMillis()
             ChronoSyneTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF282828)) {
                     SignupScreen(
+                        key = key,
                         onGoogleSignIn = { googleSignInLauncher.launch(googleSignInClient.signInIntent) }
                     )
                 }
@@ -131,10 +133,10 @@ class SignupActivity : AppCompatActivity() {
 
 
 @Composable
-fun SignupScreen(onGoogleSignIn: () -> Unit) {
+fun SignupScreen(key: Long, onGoogleSignIn: () -> Unit) {
     var showForm by remember { mutableStateOf(false) }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var email by remember(key) { mutableStateOf("") }
+    var password by remember(key) { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var inputError by remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -215,10 +217,15 @@ fun SignupScreen(onGoogleSignIn: () -> Unit) {
                                         context.startActivity(intent)
                                     } else {
                                         val msg = result.exceptionOrNull()?.message ?: "Error"
-                                        inputError = if (msg.contains("already in use", ignoreCase = true)) {
-                                            "This account already exists. Proceed to Login?"
+                                        if (msg.contains("already in use", ignoreCase = true)) {
+                                            withContext(Dispatchers.Main) {
+                                                val intent = Intent(context, LoginActivity::class.java).apply {
+                                                    putExtra("prefilled_email", email)
+                                                }
+                                                context.startActivity(intent)
+                                            }
                                         } else {
-                                            msg
+                                            inputError = msg
                                         }
                                     }
                                 }
@@ -345,6 +352,9 @@ fun TermsAndPrivacyText() {
 @Composable
 fun SignupScreenPreview() {
     ChronoSyneTheme {
-        SignupScreen(onGoogleSignIn = {})
+        SignupScreen(
+            key = 123L, // any dummy key for preview
+            onGoogleSignIn = {}
+        )
     }
 }

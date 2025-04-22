@@ -1,9 +1,12 @@
 package com.example.chronosyne.repository
 
+import android.util.Log
 import com.example.chronosyne.database.model.User
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -49,18 +52,16 @@ class UserRepository @Inject constructor(
 
     suspend fun loginWithEmail(email: String, password: String) {
         val result = auth.signInWithEmailAndPassword(email, password).await()
-        val userDoc = firestore.collection("users")
-            .document(result.user?.uid ?: "")
-            .get()
-            .await()
+        val uid = result.user?.uid ?: throw FirebaseAuthInvalidUserException("Invalid UID", "User UID is null")
 
+        // Optional Firestore check (don't block login)
+        val userDoc = firestore.collection("users").document(uid).get().await()
         if (!userDoc.exists()) {
-            throw FirebaseAuthInvalidUserException(
-                "User not found",
-                "No user record corresponding to this identifier"
-            )
+            Log.w("UserRepository", "User logged in but Firestore doc not found")
+            // You could create a default user doc here if needed
         }
     }
+
 
 
     suspend fun getUserByEmail(email: String): User? {
@@ -117,4 +118,6 @@ class UserRepository @Inject constructor(
             username = displayName ?: email?.substringBefore("@") ?: "User"
         )
     }
+
+    fun isUserSignedIn(): Boolean = auth.currentUser != null
 }
