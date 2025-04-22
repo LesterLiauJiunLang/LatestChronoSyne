@@ -8,7 +8,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:gravity="center"
-        android:background="@color/primary_color">  <!-- Set Background Color -->
+        android:background="@color/background_color">  <!-- Set Background Color -->
 
 
         <TextView
@@ -19,7 +19,7 @@
             android:padding="10dp"
             android:paddingTop="50dp"
             android:text="Welcome"
-            android:textColor="@color/secondary_color"
+            android:textColor="@color/main_color"
             android:textSize="48sp" />
 
         <ImageView
