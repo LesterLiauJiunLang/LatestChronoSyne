@@ -211,7 +211,8 @@ fun SignupScreen(onGoogleSignIn: () -> Unit) {
                                 withContext(Dispatchers.Main) {
                                     isLoading = false
                                     if (result.isSuccess) {
-                                        // TODO: Navigate to main screen
+                                        val intent = Intent(context, UsernameActivity::class.java)
+                                        context.startActivity(intent)
                                     } else {
                                         val msg = result.exceptionOrNull()?.message ?: "Error"
                                         inputError = if (msg.contains("already in use", ignoreCase = true)) {
