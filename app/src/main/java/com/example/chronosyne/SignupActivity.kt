@@ -3,32 +3,54 @@ package com.example.chronosyne
 import android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
-import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material3.AlertDialog
+import android.widget.Toast
 import androidx.activity.compose.setContent
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,17 +58,71 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.chronosyne.repository.UserRepository
 import com.example.chronosyne.ui.theme.ChronoSyneTheme
-import com.google.firebase.auth.FirebaseAuthInvalidUserException
-import kotlinx.coroutines.*
-import kotlin.jvm.java
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SignupActivity : AppCompatActivity() {
+
+    private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
+    private lateinit var googleSignInClient: GoogleSignInClient
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
+
+        googleSignInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                val idToken = account.idToken ?: throw Exception("Google ID token not found")
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    val userRepository = UserRepository()
+                    val result = userRepository.signInWithGoogle(idToken)
+
+                    withContext(Dispatchers.Main) {
+                        if (result.isSuccess) {
+                            val intent = Intent(this@SignupActivity, MainActivity::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            startActivity(intent)
+                            finish()
+                        } else {
+                            Toast.makeText(
+                                this@SignupActivity,
+                                "Google Sign-In failed. Please try signing up again.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(
+                    this@SignupActivity,
+                    "Something went wrong. Please try again.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+
         setContent {
             ChronoSyneTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF282828)) {
-                    SignupScreen()
+                    SignupScreen(
+                        onGoogleSignIn = { googleSignInLauncher.launch(googleSignInClient.signInIntent) }
+                    )
                 }
             }
         }
@@ -54,13 +130,11 @@ class SignupActivity : AppCompatActivity() {
 }
 
 
-
 @Composable
-fun SignupScreen() {
+fun SignupScreen(onGoogleSignIn: () -> Unit) {
     var showForm by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var accountNotFound by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var inputError by remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -78,23 +152,13 @@ fun SignupScreen() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            "Create An Account",
-            style = TextStyle(
-                fontFamily = PlayfairFontFamily,
-                fontSize = 40.sp,
-                fontStyle = FontStyle.Italic,
-                color = Color(0xFFb29985)
-            )
-        )
+        Text("Create An Account", style = TextStyle(
+            fontSize = 40.sp, fontStyle = FontStyle.Italic, color = Color(0xFFb29985)
+        ))
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        AnimatedVisibility(
-            visible = showForm,
-            enter = slideInVertically(initialOffsetY = { fullHeight -> fullHeight }) + fadeIn(),
-            exit = fadeOut()
-        ) {
+        AnimatedVisibility(visible = showForm, enter = slideInVertically { it } + fadeIn(), exit = fadeOut()) {
             Column {
                 OutlinedTextField(
                     value = email,
@@ -102,23 +166,11 @@ fun SignupScreen() {
                         email = it
                         inputError = ""
                     },
-                    placeholder = { Text(
-                        "email@domain.com",
-                        fontFamily = RobotoFontFamily
-                    ) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
+                    placeholder = { Text("email@domain.com") },
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.LightGray,
-                        focusedPlaceholderColor = Color.LightGray,
-                        unfocusedPlaceholderColor = Color.White,
-                        focusedBorderColor = colorResource(id = R.color.main_color),
-                        unfocusedBorderColor = colorResource(id = R.color.lighter_main_color)
-                    )
+                    colors = OutlinedTextFieldDefaults.colors()
                 )
 
                 OutlinedTextField(
@@ -127,57 +179,24 @@ fun SignupScreen() {
                         password = it
                         inputError = ""
                     },
-                    placeholder = { Text(
-                        "password123",
-                        fontFamily = RobotoFontFamily
-                    ) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
+                    placeholder = { Text("password123") },
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.LightGray,
-                        focusedPlaceholderColor = Color.LightGray,
-                        unfocusedPlaceholderColor = Color.White,
-                        focusedBorderColor = colorResource(id = R.color.main_color),
-                        unfocusedBorderColor = colorResource(id = R.color.lighter_main_color)
-                    )
+                    colors = OutlinedTextFieldDefaults.colors()
                 )
 
                 if (inputError.isNotEmpty()) {
-                    Text(
-                        text = inputError,
-                        color = Color.Red,
-                        fontSize = 14.sp,
-                        fontFamily = RalewayFontFamily,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-                }
-
-                if (accountNotFound) {
-                    Text(
-                        "Account does not exist",
-                        color = Color.Red,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-
-                    TextButton(onClick = {
-                        context.startActivity(Intent(context, SignupActivity::class.java))
-                    }) {
-                        Text(
-                            "Sign Up",
-                            style = TextStyle(
-                                fontFamily = RalewayFontFamily,
-                                fontSize = 12.sp,
-                                color = Color(0xFFb29985)
-                            )
-                        )
+                    Text(text = inputError, color = Color.Red, fontSize = 14.sp, modifier = Modifier.padding(vertical = 8.dp))
+                    if (inputError.contains("already exists")) {
+                        TextButton(onClick = {
+                            context.startActivity(Intent(context, LoginActivity::class.java))
+                        }) {
+                            Text("Go to Login", color = Color(0xFFb29985))
+                        }
                     }
                 }
-
 
                 Button(
                     onClick = {
@@ -187,87 +206,65 @@ fun SignupScreen() {
                             inputError = "Please enter a valid email address"
                         } else {
                             isLoading = true
-                            accountNotFound = false
-                            inputError = ""
-
                             CoroutineScope(Dispatchers.IO).launch {
-                                try {
-                                    userRepository.loginWithEmail(email, password)
-                                    withContext(Dispatchers.Main) {
-                                        isLoading = false
-                                        // Handle successful login here
-                                    }
-                                } catch (e: FirebaseAuthInvalidUserException) {
-                                    withContext(Dispatchers.Main) {
-                                        isLoading = false
-                                        accountNotFound = true
-                                    }
-                                } catch (e: Exception) {
-                                    withContext(Dispatchers.Main) {
-                                        isLoading = false
-                                        inputError = "Account does not exist"
+                                val result = userRepository.signUpWithEmail(email, password, email.substringBefore("@"))
+                                withContext(Dispatchers.Main) {
+                                    isLoading = false
+                                    if (result.isSuccess) {
+                                        // TODO: Navigate to main screen
+                                    } else {
+                                        val msg = result.exceptionOrNull()?.message ?: "Error"
+                                        inputError = if (msg.contains("already in use", ignoreCase = true)) {
+                                            "This account already exists. Proceed to Login?"
+                                        } else {
+                                            msg
+                                        }
                                     }
                                 }
                             }
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 17.dp)
+                    modifier = Modifier.fillMaxWidth().padding(top = 17.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black)
                 ) {
                     if (isLoading) {
                         CircularProgressIndicator(color = Color.Black)
                     } else {
-                        Text(
-                            "SIGN UP",
-                            style = TextStyle(
-                                fontFamily = RalewayFontFamily,
-                                fontSize = 12.sp
-                            )
-                        )
+                        Text("SIGN UP", fontSize = 12.sp)
                     }
                 }
+
                 Spacer(modifier = Modifier.height(12.dp))
 
                 TermsAndPrivacyText()
 
                 Button(
-                    onClick = {
-                        // TODO: Handle Google sign-in
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black
-                    ),
+                    onClick = onGoogleSignIn,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 8.dp)
+                        .padding(top = 8.dp),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
                 ) {
                     Icon(
-                    painter = painterResource(id = R.drawable.google_logo),
-                    contentDescription = "Google icon",
-                    tint = Color.Unspecified,
-                    modifier = Modifier
-                        .size(20.dp)
-                        .padding(end = 8.dp)
-                )
-
+                        painter = painterResource(id = R.drawable.google_logo),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                        modifier = Modifier
+                            .size(24.dp) // Slightly larger
+                            .padding(end = 12.dp)
+                    )
                     Text(
-                        "Continue with Google",
-                        style = TextStyle(
-                            fontFamily = RalewayFontFamily,
-                            fontSize = 14.sp
-                        )
+                        text = "Sign in with Google",
+                        color = Color.Black // Explicitly set the text color
                     )
                 }
+
             }
         }
     }
 }
+
 
 @Composable
 fun TermsAndPrivacyText() {
@@ -347,6 +344,6 @@ fun TermsAndPrivacyText() {
 @Composable
 fun SignupScreenPreview() {
     ChronoSyneTheme {
-        SignupScreen()
+        SignupScreen(onGoogleSignIn = {})
     }
 }
