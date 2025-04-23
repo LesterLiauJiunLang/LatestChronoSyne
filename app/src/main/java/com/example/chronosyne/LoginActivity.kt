@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -34,9 +35,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.chronosyne.repository.UserRepository
 import com.example.chronosyne.ui.theme.ChronoSyneTheme
+import com.example.chronosyne.utils.SessionManager
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import kotlinx.coroutines.*
 import kotlin.jvm.java
@@ -44,6 +47,15 @@ import kotlin.jvm.java
 class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val sessionManager = SessionManager(this)
+        val auth = FirebaseAuth.getInstance()
+        if (sessionManager.isRemembered() && auth.currentUser != null) {
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+            return  // Exit onCreate early to skip login screen
+        }
+
         setContent {
             ChronoSyneTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF282828)) {
@@ -75,6 +87,7 @@ fun LoginScreen() {
     var accountNotFound by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var inputError by remember { mutableStateOf("") }
+    var rememberMe by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val userRepository = remember { UserRepository() }
     val googleSignInClient = remember {
@@ -96,7 +109,13 @@ fun LoginScreen() {
             CoroutineScope(Dispatchers.IO).launch {
                 userRepository.signInWithGoogle(idToken).onSuccess { user ->
                     // Redirect to MainActivity if user exists
+
+                    if (rememberMe) {
+                        SessionManager(context).saveRememberMeState(true)
+                    }
+
                     withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Sign in successful!", Toast.LENGTH_SHORT).show()
                         val intent = Intent(context, MainActivity::class.java)
                         context.startActivity(intent)
                         (context as Activity).finish()
@@ -112,6 +131,7 @@ fun LoginScreen() {
             inputError = "Google sign-in failed"
         }
     }
+
 
 
     LaunchedEffect(Unit) {
@@ -151,7 +171,7 @@ fun LoginScreen() {
                         inputError = ""
                     },
                     placeholder = { Text(
-                        "email@domain.com",
+                        "Enter Email Address",
                         fontFamily = RobotoFontFamily
                         ) },
                     modifier = Modifier
@@ -176,7 +196,7 @@ fun LoginScreen() {
                         inputError = ""
                     },
                     placeholder = { Text(
-                        "password123",
+                        "Enter Password",
                         fontFamily = RobotoFontFamily
                     ) },
                     modifier = Modifier
@@ -226,6 +246,29 @@ fun LoginScreen() {
                     }
                 }
 
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    Checkbox(
+                        checked = rememberMe,
+                        onCheckedChange = { rememberMe = it },
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = Color(0xFFb29985),
+                            uncheckedColor = Color.LightGray
+                        )
+                    )
+                    Text(
+                        "Remember Me",
+                        color = Color.White,
+                        fontFamily = RalewayFontFamily,
+                        fontSize = 14.sp
+                    )
+                }
+
+
                 TextButton(onClick = { /* TODO: Forgot Password Logic */ }) {
                     Text(
                         "Forgot Password?",
@@ -237,6 +280,7 @@ fun LoginScreen() {
                         )
                     )
                 }
+
 
                 Button(
                     onClick = {
@@ -260,7 +304,11 @@ fun LoginScreen() {
                                     withContext(Dispatchers.Main) {
                                         isLoading = false
                                         if (existingUser != null) {
+                                            Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
                                             // Redirect to MainActivity
+                                            if (rememberMe) {
+                                                SessionManager(context).saveRememberMeState(true)
+                                            }
                                             val intent = Intent(context, MainActivity::class.java)
                                             context.startActivity(intent)
                                             (context as Activity).finish()
@@ -330,7 +378,9 @@ fun LoginScreen() {
                 Button(
                     onClick = {
                         // Launch Google Sign-In Intent (triggers account picker)
-                        googleSignInLauncher.launch(googleSignInClient.signInIntent)
+                        googleSignInClient.signOut().addOnCompleteListener {
+                            googleSignInLauncher.launch(googleSignInClient.signInIntent)
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF4285F4),

@@ -1,5 +1,6 @@
 package com.example.chronosyne
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
@@ -94,9 +95,11 @@ class SignupActivity : AppCompatActivity() {
                     withContext(Dispatchers.Main) {
                         if (result.isSuccess) {
                             val intent = Intent(this@SignupActivity, MainActivity::class.java)
+                            Toast.makeText(this@SignupActivity, "Login successful!", Toast.LENGTH_SHORT).show()
                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                             startActivity(intent)
                             finish()
+
                         } else {
                             Toast.makeText(
                                 this@SignupActivity,
@@ -121,7 +124,11 @@ class SignupActivity : AppCompatActivity() {
             ChronoSyneTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF282828)) {
                     SignupScreen(
-                        onGoogleSignIn = { googleSignInLauncher.launch(googleSignInClient.signInIntent) }
+                        onGoogleSignIn = {
+                            googleSignInClient.signOut().addOnCompleteListener {
+                                googleSignInLauncher.launch(googleSignInClient.signInIntent)
+                            }
+                        }
                     )
                 }
             }
@@ -166,7 +173,7 @@ fun SignupScreen(onGoogleSignIn: () -> Unit) {
                         email = it
                         inputError = ""
                     },
-                    placeholder = { Text("email@domain.com") },
+                    placeholder = { Text("Enter Email Address") },
                     modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -179,7 +186,7 @@ fun SignupScreen(onGoogleSignIn: () -> Unit) {
                         password = it
                         inputError = ""
                     },
-                    placeholder = { Text("password123") },
+                    placeholder = { Text("Enter Password") },
                     modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
@@ -211,7 +218,8 @@ fun SignupScreen(onGoogleSignIn: () -> Unit) {
                                 withContext(Dispatchers.Main) {
                                     isLoading = false
                                     if (result.isSuccess) {
-                                        val intent = Intent(context, UsernameActivity::class.java)
+                                        Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
+                                        val intent = Intent(context, MainActivity::class.java)
                                         context.startActivity(intent)
                                     } else {
                                         val msg = result.exceptionOrNull()?.message ?: "Error"
