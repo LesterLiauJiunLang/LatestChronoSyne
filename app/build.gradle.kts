@@ -1,9 +1,12 @@
+import org.gradle.kotlin.dsl.implementation
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.devtools.ksp") version "2.1.10-1.0.31"
+    alias(libs.plugins.ksp)
     id("com.google.gms.google-services") version "4.4.2"
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -73,4 +76,8 @@ dependencies {
     implementation(platform(libs.firebase.bom.v3280))
     implementation(libs.google.firebase.auth.ktx)
     implementation(libs.google.firebase.firestore.ktx)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.lifecycle.viewmodel.compose)
+    implementation(libs.coil.compose)
 }

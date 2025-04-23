@@ -5,7 +5,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -34,24 +44,54 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.chronosyne.ui.theme.ChronoSyneTheme
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+import android.content.Intent
+import androidx.compose.runtime.collectAsState
+import com.example.chronosyne.viewmodel.EventViewModel
+import androidx.compose.runtime.getValue
+import coil.compose.AsyncImage
+import com.google.firebase.firestore.ktx.firestore
 
 class MainActivity : ComponentActivity() {
+    private val auth: FirebaseAuth = Firebase.auth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent {
-            ChronoSyneTheme {
-                HomeScreen()
+        // Check authentication state
+        if (auth.currentUser == null) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        } else {
+            setContent {
+                ChronoSyneTheme {
+                    val eventViewModel: EventViewModel = viewModel()
+                    HomeScreen(eventViewModel = eventViewModel)
+                }
             }
         }
     }
 }
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
+               auth: FirebaseAuth = Firebase.auth
+) {
     val backgroundColor = Color(0xFF1E1E1E)
     val cardColor = Color(0xFFBEA99B)
     val textColor = Color(0xFFBEA99B)
+    val currentUser = Firebase.auth.currentUser
+    val userId = currentUser?.uid
+
+    val userDocRef = Firebase.firestore.collection("users").document(userId ?: "")
+    val email = currentUser?.email
+    val photoUrl = currentUser?.photoUrl
+
+    // Collect events from ViewModel
+    val events by eventViewModel.userEvents.collectAsState(initial = emptyList())
 
     Scaffold(
         bottomBar = {
