@@ -1,9 +1,12 @@
 package com.example.chronosyne
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -19,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -30,6 +34,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.chronosyne.repository.UserRepository
 import com.example.chronosyne.ui.theme.ChronoSyneTheme
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import kotlinx.coroutines.*
 import kotlin.jvm.java
@@ -70,6 +77,42 @@ fun LoginScreen() {
     var inputError by remember { mutableStateOf("") }
     val context = LocalContext.current
     val userRepository = remember { UserRepository() }
+    val googleSignInClient = remember {
+        val options = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(context.getString(R.string.default_web_client_id)) // Ensure this string exists
+            .requestEmail()
+            .build()
+        GoogleSignIn.getClient(context, options)
+    }
+
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        try {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            val account = task.getResult(ApiException::class.java)
+            val idToken = account.idToken!!
+
+            CoroutineScope(Dispatchers.IO).launch {
+                userRepository.signInWithGoogle(idToken).onSuccess { user ->
+                    // Redirect to MainActivity if user exists
+                    withContext(Dispatchers.Main) {
+                        val intent = Intent(context, MainActivity::class.java)
+                        context.startActivity(intent)
+                        (context as Activity).finish()
+                    }
+                }.onFailure { e ->
+                    // Handle error
+                    withContext(Dispatchers.Main) {
+                        inputError = "Google sign-in failed: ${e.message}"
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            inputError = "Google sign-in failed"
+        }
+    }
+
 
     LaunchedEffect(Unit) {
         showForm = true
@@ -208,10 +251,23 @@ fun LoginScreen() {
 
                             CoroutineScope(Dispatchers.IO).launch {
                                 try {
+                                    // 1. Authenticate with email/password
                                     userRepository.loginWithEmail(email, password)
+
+                                    // 2. Check if user exists in Firestore
+                                    val existingUser = userRepository.getUserByEmail(email)
+
                                     withContext(Dispatchers.Main) {
                                         isLoading = false
-                                        // Handle successful login here
+                                        if (existingUser != null) {
+                                            // Redirect to MainActivity
+                                            val intent = Intent(context, MainActivity::class.java)
+                                            context.startActivity(intent)
+                                            (context as Activity).finish()
+                                        } else {
+                                            // This should rarely happen (user deleted from Firestore but not Auth)
+                                            inputError = "Account not found"
+                                        }
                                     }
                                 } catch (e: FirebaseAuthInvalidUserException) {
                                     withContext(Dispatchers.Main) {
@@ -221,7 +277,7 @@ fun LoginScreen() {
                                 } catch (e: Exception) {
                                     withContext(Dispatchers.Main) {
                                         isLoading = false
-                                        inputError = "Account does not exist"
+                                        inputError = "Login failed: ${e.message}"
                                     }
                                 }
                             }
@@ -245,6 +301,54 @@ fun LoginScreen() {
                                 fontSize = 12.sp
                             )
                         )
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Divider(
+                        color = Color.LightGray,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        "Or",
+                        color = Color.White,
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        fontFamily = RalewayFontFamily
+                    )
+                    Divider(
+                        color = Color.LightGray,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = {
+                        // Launch Google Sign-In Intent (triggers account picker)
+                        googleSignInLauncher.launch(googleSignInClient.signInIntent)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4285F4),
+                        contentColor = Color.White
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.google_logo), // Add Google icon
+                            contentDescription = "Google",
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Sign In with Google", fontFamily = RalewayFontFamily)
                     }
                 }
             }
