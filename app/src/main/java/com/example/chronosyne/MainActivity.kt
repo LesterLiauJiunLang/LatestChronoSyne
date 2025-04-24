@@ -52,7 +52,11 @@ import android.content.Intent
 import androidx.compose.runtime.collectAsState
 import com.example.chronosyne.viewmodel.EventViewModel
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import coil.compose.AsyncImage
+import com.example.chronosyne.database.formatAsDate
 import com.google.firebase.firestore.ktx.firestore
 
 class MainActivity : ComponentActivity() {
@@ -78,7 +82,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
-               auth: FirebaseAuth = Firebase.auth
+                auth: FirebaseAuth = Firebase.auth
 ) {
     val backgroundColor = Color(0xFF1E1E1E)
     val cardColor = Color(0xFFBEA99B)
@@ -91,7 +95,9 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
     val photoUrl = currentUser?.photoUrl
 
     // Collect events from ViewModel
-    val events by eventViewModel.userEvents.collectAsState(initial = emptyList())
+    val upcomingEvents by eventViewModel.upcomingEvents.collectAsState()
+    val futureEvents by eventViewModel.futureEvents.collectAsState()
+
 
     Scaffold(
         bottomBar = {
@@ -165,15 +171,23 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
                                 .clip(CircleShape)
                                 .background(cardColor)
                         ) {
-                            // Profile image placeholder
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = "Profile",
-                                tint = Color.Black,
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .align(Alignment.Center)
-                            )
+                            if (photoUrl != null) {
+                                AsyncImage(
+                                    model = photoUrl,
+                                    contentDescription = "Profile",
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = "Profile",
+                                    tint = Color.Black,
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .align(Alignment.Center)
+                                )
+                            }
                         }
                     }
                 }
@@ -189,16 +203,40 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
 
-                EventCard(
-                    icon = Icons.Default.Person,
-                    title = "Group Study",
-                    date = "Date: 20 March 2025",
-                    cardColor = cardColor
-                )
+                if (upcomingEvents.isEmpty()) {
+                    Text(
+                        text = "No upcoming events",
+                        color = Color.Gray,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                } else {
+                    upcomingEvents
+                        .sortedBy { it.startTime }
+                        .forEach { event ->
+                            val iconPainter = when {
+                                event.title.contains("birthday", ignoreCase = true) ->
+                                    painterResource(id = R.drawable.birthday_icon)
+                                event.title.contains("exam", ignoreCase = true) ||
+                                        event.title.contains("school", ignoreCase = true) ->
+                                    painterResource(id = R.drawable.school_icon)
+                                else -> painterResource(id = R.drawable.default_icon)
+                            }
+
+                            EventCard(
+                                icon = iconPainter,
+                                title = event.title,
+                                date = "Date: ${event.startTime.formatAsDate()}",
+                                cardColor = cardColor
+                            )
+                        }
+
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Future Events Section
+
                 Text(
                     text = "Future Events",
                     color = textColor,
@@ -207,21 +245,35 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
 
-                EventCard(
-                    icon = Icons.Default.Notifications, // Using as placeholder for birthday icon
-                    title = "Lester's Birthday",
-                    date = "Date: 26th September 2025",
-                    cardColor = cardColor
-                )
+                if (futureEvents.isEmpty()) {
+                    Text(
+                        text = "No future events",
+                        color = Color.Gray,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                } else {
+                    futureEvents
+                        .sortedBy { it.startTime }
+                        .forEach { event ->
+                            val iconPainter = when {
+                                event.title.contains("birthday", ignoreCase = true) ->
+                                    painterResource(id = R.drawable.birthday_icon)
+                                event.title.contains("exam", ignoreCase = true) ||
+                                        event.title.contains("school", ignoreCase = true) ->
+                                    painterResource(id = R.drawable.school_icon)
+                                else -> painterResource(id = R.drawable.default_icon)
+                            }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                            EventCard(
+                                icon = iconPainter,
+                                title = event.title,
+                                date = "Date: ${event.startTime.formatAsDate()}",
+                                cardColor = cardColor
+                            )
+                        }
+                }
 
-                EventCard(
-                    icon = Icons.Default.Person, // Using person icon instead of School
-                    title = "Exam",
-                    date = "Date: 25th October 2025",
-                    cardColor = cardColor
-                )
             }
         }
     }
@@ -229,7 +281,7 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
 
 @Composable
 fun EventCard(
-    icon: ImageVector,
+    icon: Painter,
     title: String,
     date: String,
     cardColor: Color
@@ -248,7 +300,7 @@ fun EventCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = icon,
+                painter = icon,
                 contentDescription = null,
                 tint = Color.Black,
                 modifier = Modifier.size(24.dp)
