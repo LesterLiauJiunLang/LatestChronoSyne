@@ -31,3 +31,8 @@ daemon/
 # Windows system files
 Thumbs.db
 
+
+/build
+/app/build
+.gradle
+.idea

@@ -8,7 +8,6 @@ import com.example.chronosyne.repository.EventRepository
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,8 +22,7 @@ import javax.inject.Inject
 import kotlin.jvm.java
 
 
-@HiltViewModel
-class EventViewModel @Inject constructor(
+class EventViewModel(
     private val repository: EventRepository
 ) : ViewModel() {
     private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""

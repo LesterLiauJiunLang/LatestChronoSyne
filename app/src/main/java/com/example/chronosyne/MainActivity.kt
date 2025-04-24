@@ -55,8 +55,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.lifecycle.ViewModelProvider
 import coil.compose.AsyncImage
+import com.example.chronosyne.database.AppDatabase
 import com.example.chronosyne.database.formatAsDate
+import com.example.chronosyne.repository.EventRepository
+import com.example.chronosyne.viewmodel.EventViewModelFactory
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 
 class MainActivity : ComponentActivity() {
@@ -70,15 +75,32 @@ class MainActivity : ComponentActivity() {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
         } else {
+            // Initialize Room Database DAOs
+            val eventDao = AppDatabase.getInstance(this).eventDao() // Replace `YourDatabase` with your actual Room database class
+            val eventCategoryDao = AppDatabase.getInstance(this).eventcategoryDao()
+            val firestore = FirebaseFirestore.getInstance()
+
+            // Manually construct EventRepository
+            val eventRepository = EventRepository(
+                eventDao = eventDao,
+                crossRefDao = eventCategoryDao,
+                auth = FirebaseAuth.getInstance(),
+                firestore = firestore
+            )
+
+            // Create ViewModel
+            val eventViewModel = ViewModelProvider(this, EventViewModelFactory(eventRepository))
+                .get(EventViewModel::class.java)
+
             setContent {
                 ChronoSyneTheme {
-                    val eventViewModel: EventViewModel = viewModel()
                     HomeScreen(eventViewModel = eventViewModel)
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
