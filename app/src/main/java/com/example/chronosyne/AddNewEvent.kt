@@ -1,4 +1,4 @@
-package com.example.chronosyne.ui.theme
+package com.example.chronosyne
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -204,7 +205,7 @@ fun EventTypeChip(text: String, selected: Boolean) {
 
 @Composable
 fun EventSettingRow(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     text: String,
     hasToggle: Boolean,
     initialToggleState: Boolean = false,

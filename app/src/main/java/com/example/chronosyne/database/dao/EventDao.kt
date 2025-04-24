@@ -14,7 +14,7 @@ interface EventDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEvent(event: Event): Long
 
-    @Query("SELECT * FROM events WHERE userId = :userId")
+    @Query("SELECT * FROM events WHERE userId = :userId ORDER BY startTime ASC")
     fun getEventsForUser(userId: String): Flow<List<Event>>
 
     @Query("SELECT * FROM events WHERE eventId = :eventId")
@@ -25,4 +25,6 @@ interface EventDao {
 
     @Delete
     suspend fun deleteEvent(event: Event)
+
+
 }

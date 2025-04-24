@@ -4,6 +4,8 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.util.Date
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Entity(
     tableName = "events",
@@ -21,3 +23,14 @@ data class Event(
     val createdAt: Date,
     val updatedAt: Date
 )
+
+fun Date.formatAsDate(): String {
+    val format = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+    return format.format(this)
+}
+
+fun Date.formatAsDateTime(): String {
+    val format = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
+    return format.format(this)
+}
+

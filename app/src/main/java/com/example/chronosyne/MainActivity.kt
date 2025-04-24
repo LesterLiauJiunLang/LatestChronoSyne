@@ -5,7 +5,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -34,24 +44,82 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.chronosyne.ui.theme.ChronoSyneTheme
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+import android.content.Intent
+import androidx.compose.runtime.collectAsState
+import com.example.chronosyne.viewmodel.EventViewModel
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.lifecycle.ViewModelProvider
+import coil.compose.AsyncImage
+import com.example.chronosyne.database.AppDatabase
+import com.example.chronosyne.database.formatAsDate
+import com.example.chronosyne.repository.EventRepository
+import com.example.chronosyne.viewmodel.EventViewModelFactory
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
 
 class MainActivity : ComponentActivity() {
+    private val auth: FirebaseAuth = Firebase.auth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent {
-            ChronoSyneTheme {
-                HomeScreen()
+        // Check authentication state
+        if (auth.currentUser == null) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        } else {
+            // Initialize Room Database DAOs
+            val eventDao = AppDatabase.getInstance(this).eventDao() // Replace `YourDatabase` with your actual Room database class
+            val eventCategoryDao = AppDatabase.getInstance(this).eventcategoryDao()
+            val firestore = FirebaseFirestore.getInstance()
+
+            // Manually construct EventRepository
+            val eventRepository = EventRepository(
+                eventDao = eventDao,
+                crossRefDao = eventCategoryDao,
+                auth = FirebaseAuth.getInstance(),
+                firestore = firestore
+            )
+
+            // Create ViewModel
+            val eventViewModel = ViewModelProvider(this, EventViewModelFactory(eventRepository))
+                .get(EventViewModel::class.java)
+
+            setContent {
+                ChronoSyneTheme {
+                    HomeScreen(eventViewModel = eventViewModel)
+                }
             }
         }
     }
 }
 
+
 @Composable
-fun HomeScreen() {
+fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
+                auth: FirebaseAuth = Firebase.auth
+) {
     val backgroundColor = Color(0xFF1E1E1E)
     val cardColor = Color(0xFFBEA99B)
     val textColor = Color(0xFFBEA99B)
+    val currentUser = Firebase.auth.currentUser
+    val userId = currentUser?.uid
+
+    val userDocRef = Firebase.firestore.collection("users").document(userId ?: "")
+    val email = currentUser?.email
+    val photoUrl = currentUser?.photoUrl
+
+    // Collect events from ViewModel
+    val upcomingEvents by eventViewModel.upcomingEvents.collectAsState()
+    val futureEvents by eventViewModel.futureEvents.collectAsState()
+
 
     Scaffold(
         bottomBar = {
@@ -125,15 +193,23 @@ fun HomeScreen() {
                                 .clip(CircleShape)
                                 .background(cardColor)
                         ) {
-                            // Profile image placeholder
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = "Profile",
-                                tint = Color.Black,
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .align(Alignment.Center)
-                            )
+                            if (photoUrl != null) {
+                                AsyncImage(
+                                    model = photoUrl,
+                                    contentDescription = "Profile",
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = "Profile",
+                                    tint = Color.Black,
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .align(Alignment.Center)
+                                )
+                            }
                         }
                     }
                 }
@@ -149,16 +225,40 @@ fun HomeScreen() {
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
 
-                EventCard(
-                    icon = Icons.Default.Person,
-                    title = "Group Study",
-                    date = "Date: 20 March 2025",
-                    cardColor = cardColor
-                )
+                if (upcomingEvents.isEmpty()) {
+                    Text(
+                        text = "No upcoming events",
+                        color = Color.Gray,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                } else {
+                    upcomingEvents
+                        .sortedBy { it.startTime }
+                        .forEach { event ->
+                            val iconPainter = when {
+                                event.title.contains("birthday", ignoreCase = true) ->
+                                    painterResource(id = R.drawable.birthday_icon)
+                                event.title.contains("exam", ignoreCase = true) ||
+                                        event.title.contains("school", ignoreCase = true) ->
+                                    painterResource(id = R.drawable.school_icon)
+                                else -> painterResource(id = R.drawable.default_icon)
+                            }
+
+                            EventCard(
+                                icon = iconPainter,
+                                title = event.title,
+                                date = "Date: ${event.startTime.formatAsDate()}",
+                                cardColor = cardColor
+                            )
+                        }
+
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Future Events Section
+
                 Text(
                     text = "Future Events",
                     color = textColor,
@@ -167,21 +267,35 @@ fun HomeScreen() {
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
 
-                EventCard(
-                    icon = Icons.Default.Notifications, // Using as placeholder for birthday icon
-                    title = "Lester's Birthday",
-                    date = "Date: 26th September 2025",
-                    cardColor = cardColor
-                )
+                if (futureEvents.isEmpty()) {
+                    Text(
+                        text = "No future events",
+                        color = Color.Gray,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                } else {
+                    futureEvents
+                        .sortedBy { it.startTime }
+                        .forEach { event ->
+                            val iconPainter = when {
+                                event.title.contains("birthday", ignoreCase = true) ->
+                                    painterResource(id = R.drawable.birthday_icon)
+                                event.title.contains("exam", ignoreCase = true) ||
+                                        event.title.contains("school", ignoreCase = true) ->
+                                    painterResource(id = R.drawable.school_icon)
+                                else -> painterResource(id = R.drawable.default_icon)
+                            }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                            EventCard(
+                                icon = iconPainter,
+                                title = event.title,
+                                date = "Date: ${event.startTime.formatAsDate()}",
+                                cardColor = cardColor
+                            )
+                        }
+                }
 
-                EventCard(
-                    icon = Icons.Default.Person, // Using person icon instead of School
-                    title = "Exam",
-                    date = "Date: 25th October 2025",
-                    cardColor = cardColor
-                )
             }
         }
     }
@@ -189,7 +303,7 @@ fun HomeScreen() {
 
 @Composable
 fun EventCard(
-    icon: ImageVector,
+    icon: Painter,
     title: String,
     date: String,
     cardColor: Color
@@ -208,7 +322,7 @@ fun EventCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = icon,
+                painter = icon,
                 contentDescription = null,
                 tint = Color.Black,
                 modifier = Modifier.size(24.dp)
