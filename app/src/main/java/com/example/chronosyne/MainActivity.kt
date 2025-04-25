@@ -38,7 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -54,6 +53,7 @@ import com.example.chronosyne.viewmodel.EventViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.ViewModelProvider
 import coil.compose.AsyncImage
@@ -63,6 +63,7 @@ import com.example.chronosyne.repository.EventRepository
 import com.example.chronosyne.viewmodel.EventViewModelFactory
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
+import kotlin.jvm.java
 
 class MainActivity : ComponentActivity() {
     private val auth: FirebaseAuth = Firebase.auth
@@ -77,7 +78,7 @@ class MainActivity : ComponentActivity() {
         } else {
             // Initialize Room Database DAOs
             val eventDao = AppDatabase.getInstance(this).eventDao() // Replace `YourDatabase` with your actual Room database class
-            val eventCategoryDao = AppDatabase.getInstance(this).eventcategoryDao()
+            val eventCategoryDao = AppDatabase.getInstance(this).crossRefDao()
             val firestore = FirebaseFirestore.getInstance()
 
             // Manually construct EventRepository
@@ -116,9 +117,10 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
     val email = currentUser?.email
     val photoUrl = currentUser?.photoUrl
 
+    val context = LocalContext.current
     // Collect events from ViewModel
-    val upcomingEvents by eventViewModel.upcomingEvents.collectAsState()
-    val futureEvents by eventViewModel.futureEvents.collectAsState()
+    val upcomingEvents by eventViewModel.upcomingEvents.collectAsState(initial = emptyList())
+    val futureEvents by eventViewModel.futureEvents.collectAsState(initial = emptyList())
 
 
     Scaffold(
@@ -127,7 +129,8 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* Add new event */ },
+                onClick = { val intent = Intent(context, AddNewEvent::class.java)
+                    context.startActivity(intent)},
                 containerColor = Color.White,
                 contentColor = Color.Black,
                 modifier = Modifier.size(56.dp)
@@ -234,21 +237,20 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
                     )
                 } else {
                     upcomingEvents
-                        .sortedBy { it.startTime }
-                        .forEach { event ->
-                            val iconPainter = when {
-                                event.title.contains("birthday", ignoreCase = true) ->
-                                    painterResource(id = R.drawable.birthday_icon)
-                                event.title.contains("exam", ignoreCase = true) ||
-                                        event.title.contains("school", ignoreCase = true) ->
-                                    painterResource(id = R.drawable.school_icon)
+                        .sortedBy { it.event.startTime }
+                        .forEach { eventWithCategories ->
+                            val categoryName = eventWithCategories.categories.firstOrNull()?.name ?: "Custom"
+                            val iconPainter = when (categoryName) {
+                                "Task" -> painterResource(id = R.drawable.assignment_icon)
+                                "Event" -> painterResource(id = R.drawable.school_icon)
+                                "Birthday" -> painterResource(id = R.drawable.birthday_icon)
                                 else -> painterResource(id = R.drawable.default_icon)
                             }
 
                             EventCard(
                                 icon = iconPainter,
-                                title = event.title,
-                                date = "Date: ${event.startTime.formatAsDate()}",
+                                title = eventWithCategories.event.title,
+                                date = "Date: ${eventWithCategories.event.startTime.formatAsDate()}",
                                 cardColor = cardColor
                             )
                         }
@@ -276,21 +278,20 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
                     )
                 } else {
                     futureEvents
-                        .sortedBy { it.startTime }
-                        .forEach { event ->
-                            val iconPainter = when {
-                                event.title.contains("birthday", ignoreCase = true) ->
-                                    painterResource(id = R.drawable.birthday_icon)
-                                event.title.contains("exam", ignoreCase = true) ||
-                                        event.title.contains("school", ignoreCase = true) ->
-                                    painterResource(id = R.drawable.school_icon)
+                        .sortedBy { it.event.startTime }
+                        .forEach { eventWithCategories ->
+                            val categoryName = eventWithCategories.categories.firstOrNull()?.name ?: "Custom"
+                            val iconPainter = when (categoryName) {
+                                "Task" -> painterResource(id = R.drawable.assignment_icon)
+                                "Event" -> painterResource(id = R.drawable.school_icon)
+                                "Birthday" -> painterResource(id = R.drawable.birthday_icon)
                                 else -> painterResource(id = R.drawable.default_icon)
                             }
 
                             EventCard(
                                 icon = iconPainter,
-                                title = event.title,
-                                date = "Date: ${event.startTime.formatAsDate()}",
+                                title = eventWithCategories.event.title,
+                                date = "Date: ${eventWithCategories.event.startTime.formatAsDate()}",
                                 cardColor = cardColor
                             )
                         }
