@@ -60,7 +60,10 @@
             android:exported="true"
             android:theme="@style/Theme.ChronoSyne"/>
 
-
+        <activity
+            android:name=".AddNewEvent"
+            android:exported="true"
+            android:theme="@style/Theme.ChronoSyne"/>
 
         <meta-data
             android:name="com.google.android.gms.version"

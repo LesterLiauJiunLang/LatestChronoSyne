@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import com.example.chronosyne.database.Category
 import com.example.chronosyne.database.EventCategoryCrossRef
 import com.example.chronosyne.database.relations.CategoryWithEvents
 import com.example.chronosyne.database.relations.EventWithCategories
@@ -21,4 +22,7 @@ interface EventCategoryDao {
     @Transaction
     @Query("SELECT * FROM categories WHERE categoryId = :categoryId")
     suspend fun getCategoryWithEvents(categoryId: Int): CategoryWithEvents
+
+    @Query("SELECT * FROM categories WHERE name = :name LIMIT 1")
+    suspend fun getCategoryByName(name: String): Category?
 }

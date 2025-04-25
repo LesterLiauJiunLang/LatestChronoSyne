@@ -1,13 +1,21 @@
 package com.example.chronosyne
 
+import android.app.Activity
+import android.content.Intent
+import android.os.Bundle
+import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -15,49 +23,117 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
+import com.example.chronosyne.database.AppDatabase
+import com.example.chronosyne.database.Event
+import com.example.chronosyne.fake.EventRepositoryStub
+import com.example.chronosyne.repository.EventRepository
+import com.example.chronosyne.ui.theme.ChronoSyneTheme
+import com.example.chronosyne.viewmodel.EventViewModel
+import com.example.chronosyne.viewmodel.EventViewModelFactory
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.Date
+
+class AddNewEvent : ComponentActivity() {
+    private val auth: FirebaseAuth = Firebase.auth
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // Set up DAOs and repository
+        val eventDao = AppDatabase.getInstance(this).eventDao()
+        val eventCategoryDao = AppDatabase.getInstance(this).crossRefDao()
+        val firestore = FirebaseFirestore.getInstance()
+
+        val eventRepository = EventRepository(
+            eventDao = eventDao,
+            crossRefDao = eventCategoryDao,
+            auth = auth,
+            firestore = firestore
+        )
+
+        val eventViewModel = ViewModelProvider(
+            this,
+            EventViewModelFactory(eventRepository)
+        ).get(EventViewModel::class.java)
+
+        setContent {
+            ChronoSyneTheme {
+                AddNewEventScreen(eventViewModel = eventViewModel)
+            }
+        }
+    }
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddNewEventScreen() {
+fun AddNewEventScreen(eventViewModel: EventViewModel) {
     val backgroundColor = Color(0xFF1E1E1E)
     val buttonColor = Color(0xFFBEA99B)
     val textColor = Color.White
+    val context = LocalContext.current
+
+    // State variables
+    var title by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var selectedDate by remember { mutableStateOf(Date()) }
+    var selectedCategory by remember { mutableStateOf("Event") }
+    var isAllDay by remember { mutableStateOf(false) }
+    var enableNotification by remember { mutableStateOf(true) }
+
+    // Date Picker
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = selectedDate.time)
+
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { },
                 navigationIcon = {
-                    IconButton(onClick = { /* Navigate back */ }) {
+                    IconButton(onClick = { (context as Activity).finish() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
@@ -67,7 +143,35 @@ fun AddNewEventScreen() {
                 },
                 actions = {
                     Button(
-                        onClick = { /* Save event */ },
+                        onClick = {
+                            if (title.isBlank()) return@Button
+
+                            val event = Event(
+                                userId = Firebase.auth.currentUser?.uid ?: "",
+                                title = title,
+                                description = description.ifBlank { null },
+                                startTime = selectedDate, // Use selectedDate directly for startTime
+                                endTime = Date(selectedDate.time + 60_000), // Add 1 minute to endTime
+                                isAllDay = isAllDay,
+                                createdAt = Date(),
+                                updatedAt = Date(),
+                                location = null
+                            )
+
+                            scope.launch {
+                                try {
+                                    eventViewModel.insertEventWithCategory(event, selectedCategory)
+                                    // Navigate back AFTER insertion succeeds
+                                    withContext(Dispatchers.Main) {
+                                        val intent = Intent(context, MainActivity::class.java)
+                                        context.startActivity(intent)
+                                        (context as Activity).finish()
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e("AddEvent", "Failed to save: ${e.message}")
+                                }
+                            }
+                        },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = buttonColor,
                             contentColor = Color.Black
@@ -76,6 +180,7 @@ fun AddNewEventScreen() {
                     ) {
                         Text("Save")
                     }
+
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = backgroundColor,
@@ -91,117 +196,131 @@ fun AddNewEventScreen() {
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            Text(
-                text = "Add Title",
-                color = buttonColor,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 8.dp)
+            OutlinedTextField(
+                value = title,
+                onValueChange = { title = it },
+                label = { Text("Event Title", color = buttonColor) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = TextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedContainerColor = backgroundColor,
+                    unfocusedContainerColor = backgroundColor
+                )
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Description", color = buttonColor) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedContainerColor = backgroundColor,
+                    unfocusedContainerColor = backgroundColor
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Event type selection
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                EventTypeChip(text = "Event", selected = true)
-                EventTypeChip(text = "Task", selected = false)
-                EventTypeChip(text = "Birthday", selected = false)
-                EventTypeChip(text = "Custom", selected = false)
+                listOf("Event", "Task", "Birthday", "Custom").forEach { category ->
+                    EventTypeChip(
+                        text = category,
+                        selected = selectedCategory == category,
+                        onSelect = { selectedCategory = category }
+                    )
+                }
             }
 
-            // All-day toggle
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Date and settings
             EventSettingRow(
                 icon = Icons.Default.DateRange,
                 text = "All-day",
                 hasToggle = true,
-                initialToggleState = true
+                initialToggleState = isAllDay,
+                onToggleChange = { isAllDay = it }
             )
 
-            // Date selection
+
             EventSettingRow(
                 icon = Icons.Default.DateRange,
-                text = "Select Date",
-                hasToggle = false
+                text = selectedDate.toString(),
+                hasToggle = false,
+                onClick = { showDatePicker = true }
             )
 
-            // Repeat setting
-            EventSettingRow(
-                icon = Icons.Default.Refresh,
-                text = "Does not repeat",
-                hasToggle = true,
-                initialToggleState = false
-            )
-
-            // Notification setting
             EventSettingRow(
                 icon = Icons.Default.Notifications,
                 text = "Enable Notification",
                 hasToggle = true,
-                initialToggleState = true
+                initialToggleState = enableNotification,
+                onToggleChange = { enableNotification = it }
             )
-
-            // Reminder setting
-            EventSettingRow(
-                icon = Icons.Default.Notifications,
-                text = "Enable Reminder",
-                hasToggle = true,
-                initialToggleState = true,
-                description = "1 hour remind"
-            )
-
-            HorizontalDivider(
-                color = Color.Gray.copy(alpha = 0.5f),
-                thickness = 1.dp,
-                modifier = Modifier.padding(vertical = 16.dp)
-            )
-
-            // Add details section
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+        }
+        if (showDatePicker) {
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        datePickerState.selectedDateMillis?.let {
+                            selectedDate = Date(it)
+                        }
+                        showDatePicker = false
+                    }) {
+                        Text("OK")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) {
+                        Text("Cancel")
+                    }
+                }
             ) {
-                Icon(
-                    imageVector = Icons.Default.List,
-                    contentDescription = null,
-                    tint = buttonColor,
-                    modifier = Modifier.size(24.dp)
-                )
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Text(
-                    text = "Add details",
-                    color = buttonColor,
-                    fontSize = 16.sp
-                )
+                DatePicker(state = datePickerState)
             }
         }
     }
 }
 
 @Composable
-fun EventTypeChip(text: String, selected: Boolean) {
+fun EventTypeChip(
+    text: String,
+    selected: Boolean,
+    onSelect: () -> Unit
+) {
     val backgroundColor = if (selected) Color(0xFFBEA99B) else Color.Transparent
     val textColor = if (selected) Color.Black else Color(0xFFBEA99B)
-    val borderColor = Color(0xFFBEA99B)
 
     Surface(
+        onClick = onSelect,
         shape = RoundedCornerShape(16.dp),
         color = backgroundColor,
-        border = BorderStroke(1.dp, borderColor)
+        border = BorderStroke(1.dp, Color(0xFFBEA99B))
     ) {
         Text(
             text = text,
             color = textColor,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis // Add ellipsis if text is too long
         )
     }
 }
+
+
 
 @Composable
 fun EventSettingRow(
@@ -209,14 +328,16 @@ fun EventSettingRow(
     text: String,
     hasToggle: Boolean,
     initialToggleState: Boolean = false,
-    description: String? = null
+    onToggleChange: ((Boolean) -> Unit)? = null,
+    onClick: (() -> Unit)? = null
 ) {
     var isToggled by remember { mutableStateOf(initialToggleState) }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp),
+            .padding(vertical = 12.dp)
+            .clickable(enabled = onClick != null) { onClick?.invoke() },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -230,40 +351,39 @@ fun EventSettingRow(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            Column {
-                Text(
-                    text = text,
-                    color = Color(0xFFBEA99B),
-                    fontSize = 16.sp
-                )
-
-                if (description != null) {
-                    Text(
-                        text = description,
-                        color = Color.Gray,
-                        fontSize = 12.sp
-                    )
-                }
-            }
+            Text(
+                text = text,
+                color = Color(0xFFBEA99B),
+                fontSize = 16.sp
+            )
         }
 
         if (hasToggle) {
             Switch(
                 checked = isToggled,
-                onCheckedChange = { isToggled = it },
+                onCheckedChange = {
+                    isToggled = it
+                    onToggleChange?.invoke(it)
+                },
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
-                    checkedTrackColor = Color(0xFFBEA99B),
-                    uncheckedThumbColor = Color.Gray,
-                    uncheckedTrackColor = Color.DarkGray
+                    checkedTrackColor = Color(0xFFBEA99B)
                 )
             )
         }
     }
 }
-
 @Preview(showBackground = true)
 @Composable
 fun AddNewEventScreenPreview() {
-    AddNewEventScreen()
+    val dummyViewModel = remember {
+        object : EventViewModel(EventRepositoryStub()) {
+            // Add 'suspend' modifier to match parent
+            override suspend fun insertEventWithCategory(event: Event, category: String) {
+                // No-op for preview
+            }
+        }
+    }
+
+    AddNewEventScreen(eventViewModel = dummyViewModel)
 }
