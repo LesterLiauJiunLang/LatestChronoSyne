@@ -194,7 +194,8 @@ fun AddNewEventScreen(eventViewModel: EventViewModel) {
                 .fillMaxSize()
                 .background(backgroundColor)
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp) // Adds vertical spacing between rows
         ) {
             OutlinedTextField(
                 value = title,
@@ -233,7 +234,21 @@ fun AddNewEventScreen(eventViewModel: EventViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                listOf("Event", "Task", "Birthday", "Custom").forEach { category ->
+                listOf("Event", "Task", "Birthday").forEach { category ->
+                    EventTypeChip(
+                        text = category,
+                        selected = selectedCategory == category,
+                        onSelect = { selectedCategory = category }
+                    )
+                }
+            }
+
+            // Second row: Custom (aligned under "Event")
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start // Align to the left
+            ) {
+                listOf("Custom").forEach { category ->
                     EventTypeChip(
                         text = category,
                         selected = selectedCategory == category,
