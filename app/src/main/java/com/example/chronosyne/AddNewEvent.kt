@@ -89,7 +89,8 @@ fun AddNewEventScreen() {
                 .fillMaxSize()
                 .background(backgroundColor)
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
                 text = "Add Title",
@@ -101,14 +102,18 @@ fun AddNewEventScreen() {
 
             // Event type selection
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 EventTypeChip(text = "Event", selected = true)
                 EventTypeChip(text = "Task", selected = false)
                 EventTypeChip(text = "Birthday", selected = false)
+            }
+
+            // Second Row: Custom (aligned under "Event" by default)
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 EventTypeChip(text = "Custom", selected = false)
             }
 
