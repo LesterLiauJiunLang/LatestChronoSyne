@@ -90,7 +90,8 @@ fun AddNewEventScreen() {
                 .background(backgroundColor)
                 .padding(paddingValues)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+
+            verticalArrangement = Arrangement.spacedBy(8.dp) // Adds vertical spacing between rows
         ) {
             Text(
                 text = "Add Title",
@@ -105,17 +106,28 @@ fun AddNewEventScreen() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                EventTypeChip(text = "Event", selected = true)
-                EventTypeChip(text = "Task", selected = false)
-                EventTypeChip(text = "Birthday", selected = false)
+
+                listOf("Event", "Task", "Birthday").forEach { category ->
+                    EventTypeChip(
+                        text = category,
+                        selected = selectedCategory == category,
+                        onSelect = { selectedCategory = category }
+                    )
+                }
             }
 
-            // Second Row: Custom (aligned under "Event" by default)
+            // Second row: Custom (aligned under "Event")
             Row(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start // Align to the left
             ) {
-                EventTypeChip(text = "Custom", selected = false)
-            }
+                listOf("Custom").forEach { category ->
+                    EventTypeChip(
+                        text = category,
+                        selected = selectedCategory == category,
+                        onSelect = { selectedCategory = category }
+                    )
+                }
 
             // All-day toggle
             EventSettingRow(
