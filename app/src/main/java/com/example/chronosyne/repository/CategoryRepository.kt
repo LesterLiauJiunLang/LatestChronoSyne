@@ -21,11 +21,10 @@ class CategoryRepository @Inject constructor(
 
     // New: Firebase-integrated save function
     suspend fun saveCategory(category: Category, currentUserId: String) {
-        // Validate ownership
         if (category.userId != currentUserId) {
             throw SecurityException("User does not own this category")
         }
-        categoryDao.insertCategory(category)
+        categoryDao.insertCategory(category)  // Changed to insertCategory()
     }
 
     // New: Delete with validation

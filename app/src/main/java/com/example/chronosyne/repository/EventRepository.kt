@@ -3,99 +3,81 @@ package com.example.chronosyne.repository
 import com.example.chronosyne.database.dao.EventDao
 import com.example.chronosyne.database.dao.EventCategoryDao
 import com.example.chronosyne.database.Event
+import com.example.chronosyne.database.EventCategoryCrossRef
 import com.example.chronosyne.database.relations.EventWithCategories
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
-import javax.inject.Inject
+import java.util.Date
 
-class EventRepository @Inject constructor(
+open class EventRepository(
     private val eventDao: EventDao,
     private val crossRefDao: EventCategoryDao,
     private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
-    // Flow version for real-time updates
+
     fun getEventsForUser(userId: String): Flow<List<Event>> =
         eventDao.getEventsForUser(userId)
 
-    // Suspended version with Firestore backup
     suspend fun getEventWithCategories(eventId: Int): EventWithCategories {
         val localData = crossRefDao.getEventWithCategories(eventId)
-
-        // Optional: Sync with Firestore
-        try {
-            val remoteData = firestore.collection("events")
-                .document(eventId.toString())
-                .get()
-                .await()
-
-            // Merge logic here if needed
-        } catch (e: Exception) {
-            // Fallback to local data
-        }
-
         return localData
     }
 
     suspend fun insertEvent(event: Event) {
-        // Validate ownership
-        val currentUserId = auth.currentUser?.uid ?:
-        throw SecurityException("Not authenticated")
+        val currentUserId = auth.currentUser?.uid
+            ?: throw SecurityException("Not authenticated")
 
         if (event.userId != currentUserId) {
             throw SecurityException("User does not own this event")
         }
 
-        // Room insert
         eventDao.insertEvent(event)
 
-        // Firestore sync (optional)
         try {
             firestore.collection("events")
                 .document(event.eventId.toString())
                 .set(event)
                 .await()
-        } catch (e: Exception) {
-            // Handle sync error or implement retry logic
-        }
+        } catch (_: Exception) {}
     }
 
     suspend fun deleteEvent(event: Event) {
-        val currentUserId = auth.currentUser?.uid ?:
-        throw SecurityException("Not authenticated")
+        val currentUserId = auth.currentUser?.uid
+            ?: throw SecurityException("Not authenticated")
 
         if (event.userId != currentUserId) {
             throw SecurityException("Cannot delete other users' events")
         }
 
-        // Room delete
         eventDao.deleteEvent(event)
 
-        // Firestore delete (optional)
         try {
             firestore.collection("events")
                 .document(event.eventId.toString())
                 .delete()
                 .await()
-        } catch (e: Exception) {
-            // Handle sync error
-        }
+        } catch (_: Exception) {}
     }
 
-    // Batch operations
-    suspend fun syncAllEventsToFirestore(userId: String) {
-        val events = eventDao.getEventsForUser(userId).first()
-        val batch = firestore.batch()
+    open suspend fun insertEventWithCategory(event: Event, categoryName: String) {
+        val category = crossRefDao.getCategoryByName(categoryName)
+            ?: throw IllegalArgumentException("Category '$categoryName' not found")
 
-        events.forEach { event ->
-            val docRef = firestore.collection("events")
-                .document(event.eventId.toString())
-            batch.set(docRef, event)
-        }
+        val eventId = eventDao.insertEvent(event)
 
-        batch.commit().await()
+        val crossRef = EventCategoryCrossRef(
+            eventId = eventId.toInt(),
+            categoryId = category.categoryId
+        )
+        crossRefDao.insertEventCategoryCrossRef(crossRef)
     }
+
+    fun getUpcomingEvents(userId: String, today: Date, cutoffDate: Date): Flow<List<EventWithCategories>> =
+        eventDao.getEventsBetweenDatesWithCategories(userId, today, cutoffDate)
+
+    fun getFutureEvents(userId: String, cutoffDate: Date): Flow<List<EventWithCategories>> =
+        eventDao.getEventsAfterDateWithCategories(userId, cutoffDate)
 }
