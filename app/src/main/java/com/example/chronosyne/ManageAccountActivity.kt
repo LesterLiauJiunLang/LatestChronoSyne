@@ -140,6 +140,9 @@ fun ManageAccountScreen(onBackPressed: () -> Unit, profilePhotoUrl: String? = Fi
                     )
                 }
 
+                IconButton(
+                    onClick = { context.startActivity(Intent(context, ProfileActivity::class.java)) }
+                ) {
                 Box(
                     modifier = Modifier
                         .size(36.dp)
@@ -163,6 +166,7 @@ fun ManageAccountScreen(onBackPressed: () -> Unit, profilePhotoUrl: String? = Fi
                                 .align(Alignment.Center)
                         )
                     }
+                }
                 }
             }
         }
