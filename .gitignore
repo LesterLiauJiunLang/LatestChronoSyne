@@ -1,15 +1,38 @@
+# Ignore all .iml files
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+
+# Gradle-related files and folders
+.gradle/
 local.properties
+.cxx/
+.externalNativeBuild/
+build/
+captures/
+
+# Caches and temp files
+caches/
+daemon/
+.tmp/
+.kotlinc/
+.kotlin/
+
+# Android Studio/IDE settings
+.idea/
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+
+# macOS system files
+.DS_Store
+
+# Windows system files
+Thumbs.db
+
+
+/build
+/app/build
+.gradle
+.idea
