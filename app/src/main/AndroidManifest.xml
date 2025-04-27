@@ -60,6 +60,13 @@
             android:exported="true"
             android:theme="@style/Theme.ChronoSyne"/>
 
+
+        
+
+
+
+
+
         <activity
             android:name=".SettingsActivity"
             android:exported="true"
@@ -79,10 +86,6 @@
             android:name=".AboutActivity"
             android:exported="true"
             android:theme="@style/Theme.ChronoSyne"/>
-
-
-
-
 
         <meta-data
             android:name="com.google.android.gms.version"
