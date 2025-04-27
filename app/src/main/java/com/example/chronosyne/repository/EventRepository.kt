@@ -62,7 +62,7 @@ open class EventRepository(
         } catch (_: Exception) {}
     }
 
-    open suspend fun insertEventWithCategory(event: Event, categoryName: String) {
+    open suspend fun insertEventWithCategory(event: Event, categoryName: String): Long {
         val category = crossRefDao.getCategoryByName(categoryName)
             ?: throw IllegalArgumentException("Category '$categoryName' not found")
 
@@ -73,6 +73,8 @@ open class EventRepository(
             categoryId = category.categoryId
         )
         crossRefDao.insertEventCategoryCrossRef(crossRef)
+
+        return eventId
     }
 
     fun getUpcomingEvents(userId: String, today: Date, cutoffDate: Date): Flow<List<EventWithCategories>> =

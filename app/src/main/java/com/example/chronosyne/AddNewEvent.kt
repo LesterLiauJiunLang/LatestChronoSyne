@@ -16,6 +16,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+
+import androidx.compose.foundation.layout.heightIn
+
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,6 +32,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -63,6 +69,7 @@ import com.example.chronosyne.database.Event
 import com.example.chronosyne.fake.EventRepositoryStub
 import com.example.chronosyne.repository.EventRepository
 import com.example.chronosyne.ui.theme.ChronoSyneTheme
+import com.example.chronosyne.utils.NotificationHelper
 import com.example.chronosyne.viewmodel.EventViewModel
 import com.example.chronosyne.viewmodel.EventViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
@@ -126,6 +133,11 @@ fun AddNewEventScreen(eventViewModel: EventViewModel) {
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = selectedDate.time)
 
+
+    var selectedNotificationTiming by remember { mutableStateOf("1 hour before") }
+    val notificationOptions = listOf("1 week before", "1 day before", "1 hour before", "30 minutes before")
+
+
     val scope = rememberCoroutineScope()
 
     Scaffold(
@@ -170,6 +182,11 @@ fun AddNewEventScreen(eventViewModel: EventViewModel) {
                                 } catch (e: Exception) {
                                     Log.e("AddEvent", "Failed to save: ${e.message}")
                                 }
+                                if (enableNotification) {
+                                    NotificationHelper.createNotificationChannel(context)
+                                    NotificationHelper.scheduleNotification(context, event)
+                                }
+
                             }
                         },
                         colors = ButtonDefaults.buttonColors(
@@ -225,7 +242,9 @@ fun AddNewEventScreen(eventViewModel: EventViewModel) {
                     focusedContainerColor = backgroundColor,
                     unfocusedContainerColor = backgroundColor
                 )
+
             )
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -283,6 +302,62 @@ fun AddNewEventScreen(eventViewModel: EventViewModel) {
                 initialToggleState = enableNotification,
                 onToggleChange = { enableNotification = it }
             )
+
+
+            if (enableNotification) {
+                var expanded by remember { mutableStateOf(false) }
+
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Notify me",
+                        color = Color(0xFFBEA99B),
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = !expanded }
+                    ) {
+                        OutlinedTextField(
+                            readOnly = true,
+                            value = selectedNotificationTiming,
+                            onValueChange = {},
+                            label = { Text("Notification Timing", color = Color(0xFFBEA99B)) },
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                            },
+                            colors = TextFieldDefaults.colors(
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                focusedContainerColor = backgroundColor,
+                                unfocusedContainerColor = backgroundColor
+                            ),
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                                .heightIn(min = 56.dp)
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            notificationOptions.forEach { selectionOption ->
+                                androidx.compose.material3.DropdownMenuItem(
+                                    text = { Text(selectionOption) },
+                                    onClick = {
+                                        selectedNotificationTiming = selectionOption
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+
         }
         if (showDatePicker) {
             DatePickerDialog(
@@ -393,9 +468,10 @@ fun EventSettingRow(
 fun AddNewEventScreenPreview() {
     val dummyViewModel = remember {
         object : EventViewModel(EventRepositoryStub()) {
-            // Add 'suspend' modifier to match parent
-            override suspend fun insertEventWithCategory(event: Event, category: String) {
-                // No-op for preview
+            // Match the return type signature
+            override suspend fun insertEventWithCategory(event: Event, category: String): Long {
+                // Return dummy value for preview
+                return 0L
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.example.chronosyne.viewmodel
 
+import android.R.attr.category
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -73,11 +74,8 @@ open class EventViewModel(private val repository: EventRepository) : ViewModel()
             }
     }
 
-    open suspend fun insertEventWithCategory(event: Event, category: String) {
-        try {
-            repository.insertEventWithCategory(event, category)
-        } catch (e: Exception) {
-            Log.e("EventViewModel", "Insert failed: ${e.message}")
-        }
+    open suspend fun insertEventWithCategory(event: Event, category: String): Long{
+        return repository.insertEventWithCategory(event, category)
     }
+
 }
