@@ -64,26 +64,7 @@
             android:name=".AddNewEvent"
             android:exported="true"
             android:theme="@style/Theme.ChronoSyne"/>
-
-        <activity
-            android:name=".SettingsActivity"
-            android:exported="true"
-            android:theme="@style/Theme.ChronoSyne"/>
-
-        <activity
-            android:name=".ManageAccountActivity"
-            android:exported="true"
-            android:theme="@style/Theme.ChronoSyne"/>
-
-        <activity
-            android:name=".ManageNotificationActivity"
-            android:exported="true"
-            android:theme="@style/Theme.ChronoSyne"/>
-
-        <activity
-            android:name=".AboutActivity"
-            android:exported="true"
-            android:theme="@style/Theme.ChronoSyne"/>
+        
 
         <meta-data
             android:name="com.google.android.gms.version"
