@@ -174,7 +174,8 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        IconButton(onClick = { val intent = Intent(context, SettingsActivity::class.java) }) {
+                        IconButton(
+                            onClick = { context.startActivity(Intent(context, SettingsActivity::class.java)) }) {
                             Icon(
                                 imageVector = Icons.Default.Settings,
                                 contentDescription = "Settings",
