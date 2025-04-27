@@ -1,10 +1,13 @@
 package com.example.chronosyne.repository
 
 import com.example.chronosyne.database.model.User
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -116,5 +119,40 @@ class UserRepository @Inject constructor(
             email = email ?: "",
             username = displayName ?: email?.substringBefore("@") ?: "User"
         )
+    }
+
+    suspend fun updateEmail(newEmail: String): Boolean {
+        val user = auth.currentUser ?: return false
+        return try {
+            // Update email in Firebase Auth
+            user.updateEmail(newEmail).await()
+            // Update email in Firestore
+            firestore.collection("users").document(user.uid)
+                .update("email", newEmail)
+                .await()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    suspend fun updatePassword(newPassword: String): Boolean {
+        val user = auth.currentUser ?: return false
+        return try {
+            user.updatePassword(newPassword).await()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    suspend fun getUsernameFromFirestore(): String? {
+        val uid = Firebase.auth.currentUser?.uid ?: return null
+        val document = Firebase.firestore.collection("users").document(uid).get().await()
+        return document.getString("username")
+    }
+
+    fun signOut() {
+        auth.signOut()
     }
 }

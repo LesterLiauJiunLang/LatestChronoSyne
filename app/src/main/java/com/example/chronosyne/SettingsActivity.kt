@@ -36,6 +36,8 @@ import coil.compose.AsyncImage
 import com.example.chronosyne.ui.theme.ChronoSyneTheme
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import java.util.TimeZone
+
 
 
 class SettingsActivity : ComponentActivity() {
@@ -63,7 +65,14 @@ fun SettingsScreen(onBackPressed: () -> Unit, profilePhotoUrl: String? = Firebas
     val context = LocalContext.current
     var timeZoneEnabled by remember { mutableStateOf(false) }
 
+    val deviceTimeZone = TimeZone.getDefault().id
 
+    // Dynamically change subtitle based on toggle
+    val timeZoneSubtitle = if (timeZoneEnabled) {
+        "Use device's time zone\n$deviceTimeZone"
+    } else {
+        "Malaysia Time GMT+8"
+    }
 
     Column(
         modifier = Modifier
@@ -149,7 +158,7 @@ fun SettingsScreen(onBackPressed: () -> Unit, profilePhotoUrl: String? = Firebas
 
         SettingsItemSection(
             title = "Time Zone",
-            subtitle = "Use device's time zone\nMalaysia Time GMT+8",
+            subtitle = timeZoneSubtitle,
             hasToggle = true,
             toggleValue = timeZoneEnabled,
             onToggleChange = { timeZoneEnabled = it }

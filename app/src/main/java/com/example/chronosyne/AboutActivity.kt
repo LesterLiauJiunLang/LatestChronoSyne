@@ -177,7 +177,7 @@ fun AboutScreen(onBackPressed: () -> Unit, profilePhotoUrl: String? = Firebase.a
             item {
                 FaqItem(
                     question = "How do I delete my account?",
-                    answer = "Go to Settings > Account > Delete Account. Please note that this will erase all your data."
+                    answer = "Go to Settings > Account > Delete Account. Please note that this will erase all your data and you cannot delete your account if you signed in with Google."
                 )
             }
         }
