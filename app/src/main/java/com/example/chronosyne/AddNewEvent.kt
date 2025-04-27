@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+
 import androidx.compose.foundation.layout.heightIn
+
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -32,6 +34,7 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -130,8 +133,10 @@ fun AddNewEventScreen(eventViewModel: EventViewModel) {
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = selectedDate.time)
 
+
     var selectedNotificationTiming by remember { mutableStateOf("1 hour before") }
     val notificationOptions = listOf("1 week before", "1 day before", "1 hour before", "30 minutes before")
+
 
     val scope = rememberCoroutineScope()
 
@@ -237,7 +242,9 @@ fun AddNewEventScreen(eventViewModel: EventViewModel) {
                     focusedContainerColor = backgroundColor,
                     unfocusedContainerColor = backgroundColor
                 )
+
             )
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -295,6 +302,7 @@ fun AddNewEventScreen(eventViewModel: EventViewModel) {
                 initialToggleState = enableNotification,
                 onToggleChange = { enableNotification = it }
             )
+
 
             if (enableNotification) {
                 var expanded by remember { mutableStateOf(false) }
