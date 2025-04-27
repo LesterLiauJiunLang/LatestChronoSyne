@@ -1,5 +1,6 @@
 package com.example.chronosyne
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -109,6 +110,10 @@ fun ManageNotificationScreen(onBackPressed: () -> Unit, profilePhotoUrl: String?
                     )
                 }
 
+
+                IconButton(
+                    onClick = { context.startActivity(Intent(context, ProfileActivity::class.java)) }
+                ) {
                 Box(
                     modifier = Modifier
                         .size(36.dp)
@@ -131,6 +136,7 @@ fun ManageNotificationScreen(onBackPressed: () -> Unit, profilePhotoUrl: String?
                                 .size(20.dp)
                                 .align(Alignment.Center)
                         )
+                    }
                     }
                 }
             }

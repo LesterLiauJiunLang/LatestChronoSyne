@@ -1,5 +1,6 @@
 package com.example.chronosyne
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -120,6 +121,10 @@ fun AboutScreen(onBackPressed: () -> Unit, profilePhotoUrl: String? = Firebase.a
                     )
                 }
 
+
+                IconButton(
+                    onClick = { context.startActivity(Intent(context, ProfileActivity::class.java)) }
+                ) {
                 Box(
                     modifier = Modifier
                         .size(36.dp)
@@ -142,6 +147,7 @@ fun AboutScreen(onBackPressed: () -> Unit, profilePhotoUrl: String? = Firebase.a
                                 .size(20.dp)
                                 .align(Alignment.Center)
                         )
+                    }
                     }
                 }
             }
