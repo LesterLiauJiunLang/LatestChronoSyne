@@ -60,12 +60,10 @@
             android:exported="true"
             android:theme="@style/Theme.ChronoSyne"/>
 
-
-        
-
-
-
-
+        <activity
+            android:name=".AddNewEvent"
+            android:exported="true"
+            android:theme="@style/Theme.ChronoSyne"/>
 
         <activity
             android:name=".SettingsActivity"
