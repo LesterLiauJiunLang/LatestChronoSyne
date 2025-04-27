@@ -151,9 +151,9 @@ fun ProfileScreen(onBackPressed: () -> Unit, profilePhotoUrl: String? = Firebase
                 modifier = Modifier
                     .size(120.dp)
                     .align(Alignment.CenterHorizontally)
-                    .clip(CircleShape)
-                    .background(cardColor)
+                    .background(cardColor, CircleShape)
                     .padding(16.dp)
+                    .clip(CircleShape)
             ) {
                 if (photoUrl != null) {
                     AsyncImage(
@@ -170,27 +170,6 @@ fun ProfileScreen(onBackPressed: () -> Unit, profilePhotoUrl: String? = Firebase
                             .size(60.dp)
                             .align(Alignment.Center),
                         tint = Color.Black
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(5.dp))
-
-            Box(
-                modifier = Modifier
-                    .size(36.dp) // Size of the background circle
-                    .background(textColor, CircleShape) // Apply background color and make it circular
-                    .align(Alignment.CenterHorizontally) // Align it to the center horizontally
-                    .padding(4.dp) // Padding inside the circle
-            ) {
-                IconButton(
-                    onClick = onCameraClick,
-                    modifier = Modifier.fillMaxSize() // Make the icon button fill the circle
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.CameraAlt,
-                        contentDescription = "Change Profile Picture",
-                        tint = Color.Black // Set the camera icon color to white
                     )
                 }
             }
