@@ -13,7 +13,9 @@ class EventRepositoryStub : EventRepository(
     firestore = FirebaseFirestore.getInstance()
 ) {
     // Add 'suspend' modifier
-    override suspend fun insertEventWithCategory(event: Event, category: String) {
-        // No-op for preview
+    override suspend fun insertEventWithCategory(event: Event, category: String): Long {
+        // Return a fake ID
+        return 1L
     }
+
 }

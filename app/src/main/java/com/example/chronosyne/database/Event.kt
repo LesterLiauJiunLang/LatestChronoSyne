@@ -12,7 +12,7 @@ import java.util.Locale
     indices = [Index("userId")]  // Keep index for query performance
 )
 data class Event(
-    @PrimaryKey(autoGenerate = true) val eventId: Int = 0,
+    @PrimaryKey(autoGenerate = true) val eventId: Long = 0L,
     val userId: String,  // Changed from Int to String (Firebase UID)
     val title: String,
     val description: String?,

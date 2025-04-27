@@ -1,6 +1,10 @@
 package com.example.chronosyne
 
+import android.app.AlarmManager
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -26,6 +30,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -34,36 +39,38 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.chronosyne.ui.theme.ChronoSyneTheme
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
-import android.content.Intent
-import androidx.compose.runtime.collectAsState
-import com.example.chronosyne.viewmodel.EventViewModel
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.chronosyne.database.AppDatabase
+import com.example.chronosyne.database.Event
 import com.example.chronosyne.database.formatAsDate
 import com.example.chronosyne.repository.EventRepository
+import com.example.chronosyne.ui.theme.ChronoSyneTheme
+import com.example.chronosyne.utils.NotificationHelper
+import com.example.chronosyne.viewmodel.EventViewModel
 import com.example.chronosyne.viewmodel.EventViewModelFactory
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
-import kotlin.jvm.java
+import com.google.firebase.ktx.Firebase
+import java.util.Date
 
 class MainActivity : ComponentActivity() {
     private val auth: FirebaseAuth = Firebase.auth
@@ -71,13 +78,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         // Check authentication state
         if (auth.currentUser == null) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
         } else {
+            // Check exact alarm permission FIRST
+            checkExactAlarmPermission()
+            NotificationHelper.createNotificationChannel(this)
+
             // Initialize Room Database DAOs
-            val eventDao = AppDatabase.getInstance(this).eventDao() // Replace `YourDatabase` with your actual Room database class
+            val eventDao = AppDatabase.getInstance(this).eventDao()
             val eventCategoryDao = AppDatabase.getInstance(this).crossRefDao()
             val firestore = FirebaseFirestore.getInstance()
 
@@ -100,8 +112,20 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
 
+    // Move the permission check function OUTSIDE onCreate
+    private fun checkExactAlarmPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+            if (!alarmManager.canScheduleExactAlarms()) {
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                    data = "package:$packageName".toUri()
+                }
+                startActivity(intent)
+            }
+        }
+    }
+}
 
 @Composable
 fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
@@ -215,6 +239,30 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
                             }
                         }
                     }
+                }
+
+                // ADD TEST BUTTON HERE
+                Button(
+                    onClick = {
+                        val testEvent = Event(
+                            eventId = 0,
+                            userId = userId ?: "test",
+                            title = "Test Event",
+                            description = "Test Notification",
+                            startTime = Date(System.currentTimeMillis() + 60000), // 1 minute from now
+                            endTime = Date(System.currentTimeMillis() + 120000),
+                            isAllDay = false,
+                            createdAt = Date(),
+                            updatedAt = Date(),
+                            location = null
+                        )
+                        NotificationHelper.scheduleNotification(context, testEvent)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    Text("Test Notification Scheduling")
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
