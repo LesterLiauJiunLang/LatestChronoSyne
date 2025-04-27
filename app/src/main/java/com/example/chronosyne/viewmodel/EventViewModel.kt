@@ -78,4 +78,8 @@ open class EventViewModel(private val repository: EventRepository) : ViewModel()
         return repository.insertEventWithCategory(event, category)
     }
 
+    suspend fun getEventById(eventId: Int): Event? {
+        return repository.getEventWithCategories(eventId).event
+    }
+
 }

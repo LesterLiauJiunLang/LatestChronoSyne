@@ -320,7 +320,7 @@ fun ManageAccountScreen(onBackPressed: () -> Unit, profilePhotoUrl: String? = Fi
                 textColor = Color.Red
             ) {
                 userRepository.signOut()
-                val intent = Intent(context, LoginActivity::class.java)
+                val intent = Intent(context, WelcomeActivity::class.java)
                 context.startActivity(intent)
                 (context as? Activity)?.finish()
             }
