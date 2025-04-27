@@ -54,6 +54,8 @@ import com.example.chronosyne.viewmodel.EventViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.ViewModelProvider
 import coil.compose.AsyncImage
@@ -106,9 +108,10 @@ class MainActivity : ComponentActivity() {
 fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
                 auth: FirebaseAuth = Firebase.auth
 ) {
-    val backgroundColor = Color(0xFF1E1E1E)
-    val cardColor = Color(0xFFBEA99B)
-    val textColor = Color(0xFFBEA99B)
+    val backgroundColor = Color(color = 0xFF282828)
+    val mainColor = Color(0xFFb29985)
+    val cardColor = Color(0xFFb29985)
+    val textColor = Color(0xFFb29985)
     val currentUser = Firebase.auth.currentUser
     val userId = currentUser?.uid
 
@@ -171,7 +174,10 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        IconButton(onClick = { /* Open settings */ }) {
+                        val context = LocalContext.current
+
+                        IconButton(onClick = { val intent = Intent(context, SettingsActivity::class.java)
+                            context.startActivity(intent) }) {
                             Icon(
                                 imageVector = Icons.Default.Settings,
                                 contentDescription = "Settings",
