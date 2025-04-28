@@ -207,7 +207,7 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
                             )
                         }
 
-                        IconButton(onClick = { /* Open notifications */ }) {
+                        IconButton(onClick = { context.startActivity(Intent(context, NotificationActivity::class.java)) }) {
                             Icon(
                                 imageVector = Icons.Default.Notifications,
                                 contentDescription = "Notifications",

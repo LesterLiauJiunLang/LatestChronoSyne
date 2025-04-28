@@ -132,7 +132,7 @@ fun ManageAccountScreen(onBackPressed: () -> Unit, profilePhotoUrl: String? = Fi
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.align(Alignment.CenterEnd)
             ) {
-                IconButton(onClick = { /* Notifications */ }) {
+                IconButton(onClick = { context.startActivity(Intent(context, NotificationActivity::class.java)) }) {
                     Icon(
                         imageVector = Icons.Default.Notifications,
                         contentDescription = "Notifications",

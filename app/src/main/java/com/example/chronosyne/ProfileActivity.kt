@@ -129,7 +129,7 @@ fun ProfileScreen(onBackPressed: () -> Unit, profilePhotoUrl: String? = Firebase
                     )
                 }
 
-                IconButton(onClick = { /* Notifications */ }) {
+                IconButton(onClick = { context.startActivity(Intent(context, NotificationActivity::class.java)) }) {
                     Icon(
                         imageVector = Icons.Default.Notifications,
                         contentDescription = "Notifications",
