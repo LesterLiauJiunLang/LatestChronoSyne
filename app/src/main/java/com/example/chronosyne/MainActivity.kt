@@ -453,6 +453,11 @@ fun BottomNavBar(backgroundColor: Color) {
             Spacer(modifier = Modifier.width(56.dp))
 
             Column(
+                modifier = Modifier
+                    .clickable {
+                        val intent = Intent(context, MyEventActivity::class.java)
+                        context.startActivity(intent)
+                    },
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Icon(
