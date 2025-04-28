@@ -113,7 +113,7 @@ fun AboutScreen(onBackPressed: () -> Unit, profilePhotoUrl: String? = Firebase.a
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.align(Alignment.CenterEnd)
             ) {
-                IconButton(onClick = { /* Notifications */ }) {
+                IconButton(onClick = { context.startActivity(Intent(context, NotificationActivity::class.java)) }) {
                     Icon(
                         imageVector = Icons.Default.Notifications,
                         contentDescription = "Notifications",
