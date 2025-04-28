@@ -4,54 +4,37 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
-import com.example.chronosyne.viewmodel.EventViewModel
-import com.example.chronosyne.viewmodel.EventViewModelFactory
 import coil.compose.AsyncImage
 import com.example.chronosyne.database.AppDatabase
 import com.example.chronosyne.database.formatAsDate
 import com.example.chronosyne.repository.EventRepository
 import com.example.chronosyne.ui.theme.ChronoSyneTheme
-import com.google.firebase.auth.FirebaseAuth
+import com.example.chronosyne.viewmodel.EventViewModel
+import com.example.chronosyne.viewmodel.EventViewModelFactory
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
-import java.util.TimeZone
-
-
+import java.util.concurrent.TimeUnit
 
 class NotificationActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,16 +49,16 @@ class NotificationActivity : ComponentActivity() {
         val eventRepository = EventRepository(
             eventDao = eventDao,
             crossRefDao = eventCategoryDao,
-            auth = FirebaseAuth.getInstance(),
+            auth = Firebase.auth,
             firestore = firestore
         )
 
-
         val eventViewModel = ViewModelProvider(this, EventViewModelFactory(eventRepository))
             .get(EventViewModel::class.java)
+
         setContent {
             ChronoSyneTheme {
-                NotificationScreen (
+                NotificationScreen(
                     eventViewModel = eventViewModel,
                     onBackPressed = { finish() }
                 )
@@ -84,22 +67,18 @@ class NotificationActivity : ComponentActivity() {
     }
 }
 
-
 @Composable
 fun NotificationScreen(
     eventViewModel: EventViewModel,
     onBackPressed: () -> Unit,
-    profilePhotoUrl: String? = Firebase.auth.currentUser?.photoUrl?.toString()) {
+    profilePhotoUrl: String? = Firebase.auth.currentUser?.photoUrl?.toString()
+) {
     val backgroundColor = Color(0xFF282828)
     val cardColor = Color(0xFFb29985)
     val textColor = Color(0xFFb29985)
-    val currentUser = Firebase.auth.currentUser
-    val photoUrl = currentUser?.photoUrl
-
     val context = LocalContext.current
+
     val upcomingEvents by eventViewModel.upcomingEvents.collectAsState(initial = emptyList())
-
-
 
     Column(
         modifier = Modifier
@@ -110,10 +89,8 @@ fun NotificationScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(backgroundColor)
-                .padding(start = 5.dp, end = 5.dp, top = 5.dp, bottom = 16.dp)
+                .padding(bottom = 16.dp)
         ) {
-            // Back button (LEFT)
             IconButton(
                 onClick = { onBackPressed() },
                 modifier = Modifier.align(Alignment.CenterStart)
@@ -125,23 +102,21 @@ fun NotificationScreen(
                 )
             }
 
-            // Center Title
             Text(
                 text = "Notifications",
                 color = textColor,
-                fontFamily = PlayfairFontFamily,
                 fontSize = 28.sp,
                 modifier = Modifier.align(Alignment.Center)
             )
 
-            // Profile + Notifications (RIGHT)
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.align(Alignment.CenterEnd)
             ) {
                 IconButton(
-                    onClick = { context.startActivity(Intent(context, SettingsActivity::class.java)) }) {
+                    onClick = { context.startActivity(Intent(context, SettingsActivity::class.java)) }
+                ) {
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = "Settings",
@@ -149,16 +124,8 @@ fun NotificationScreen(
                     )
                 }
 
-
                 IconButton(
-                    onClick = {
-                        context.startActivity(
-                            Intent(
-                                context,
-                                ProfileActivity::class.java
-                            )
-                        )
-                    }
+                    onClick = { context.startActivity(Intent(context, ProfileActivity::class.java)) }
                 ) {
                     Box(
                         modifier = Modifier
@@ -207,8 +174,7 @@ fun NotificationScreen(
             upcomingEvents
                 .sortedBy { it.event.startTime }
                 .forEach { eventWithCategories ->
-                    val categoryName =
-                        eventWithCategories.categories.firstOrNull()?.name ?: "Custom"
+                    val categoryName = eventWithCategories.categories.firstOrNull()?.name ?: "Custom"
                     val iconPainter = when (categoryName) {
                         "Task" -> painterResource(id = R.drawable.assignment_icon)
                         "Event" -> painterResource(id = R.drawable.school_icon)
@@ -216,23 +182,24 @@ fun NotificationScreen(
                         else -> painterResource(id = R.drawable.default_icon)
                     }
 
+                    val event = eventWithCategories.event
+                    val timeUntilEvent = event.startTime.time - System.currentTimeMillis()
+                    val remainingTimeFormatted = formatDuration(timeUntilEvent)
+
                     EventNotifCard(
                         icon = iconPainter,
-                        title = eventWithCategories.event.title,
-                        date = "Date: ${eventWithCategories.event.startTime.formatAsDate()}",
+                        title = event.title,
+                        date = "Date: ${event.startTime.formatAsDate()}",
+                        remainingTime = remainingTimeFormatted,
                         cardColor = cardColor,
                         onClick = {
                             val intent = Intent(context, EventDetailActivity::class.java).apply {
-                                putExtra(
-                                    "EVENT_ID",
-                                    eventWithCategories.event.eventId.toInt()
-                                ) // Convert to Int
+                                putExtra("EVENT_ID", event.eventId.toInt())
                             }
                             context.startActivity(intent)
                         }
                     )
                 }
-
         }
     }
 }
@@ -242,6 +209,7 @@ fun EventNotifCard(
     icon: Painter,
     title: String,
     date: String,
+    remainingTime: String,
     cardColor: Color,
     onClick: () -> Unit = {}
 ) {
@@ -275,12 +243,36 @@ fun EventNotifCard(
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
-
                 Text(
                     text = date,
                     color = Color.Black,
                     fontSize = 14.sp
                 )
+                Text(
+                    text = remainingTime,
+                    color = Color.DarkGray,
+                    fontSize = 12.sp
+                )
+            }
+        }
+    }
+}
+
+// Reuse the same formatting logic for remaining time as EventDetailActivity
+private fun formatDuration(millis: Long): String {
+    return when {
+        millis <= 0 -> "Event has started"
+        else -> {
+            val days = TimeUnit.MILLISECONDS.toDays(millis)
+            val hours = TimeUnit.MILLISECONDS.toHours(millis) % 24
+            val minutes = TimeUnit.MILLISECONDS.toMinutes(millis) % 60
+            val seconds = TimeUnit.MILLISECONDS.toSeconds(millis) % 60
+
+            buildString {
+                if (days > 0) append("$days days ")
+                if (hours > 0) append("$hours hours ")
+                if (minutes > 0) append("$minutes minutes ")
+                append("$seconds seconds")
             }
         }
     }
