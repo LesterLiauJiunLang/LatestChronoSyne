@@ -76,6 +76,7 @@ import java.util.Date
 class MainActivity : ComponentActivity() {
     private val auth: FirebaseAuth = Firebase.auth
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -418,6 +419,9 @@ fun EventCard(
 
 @Composable
 fun BottomNavBar(backgroundColor: Color) {
+
+    val context = LocalContext.current
+
     BottomAppBar(
         containerColor = backgroundColor,
         contentColor = Color.Black,
@@ -427,10 +431,15 @@ fun BottomNavBar(backgroundColor: Color) {
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Column(
+                modifier = Modifier
+                    .clickable {
+                        val intent = Intent(context, CalendarActivity::class.java)
+                        context.startActivity(intent)
+                    },
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Icon(
-                    imageVector = Icons.Default.DateRange, // Using DateRange instead of CalendarMonth
+                    imageVector = Icons.Default.DateRange,
                     contentDescription = "Calendar",
                     modifier = Modifier.size(24.dp)
                 )

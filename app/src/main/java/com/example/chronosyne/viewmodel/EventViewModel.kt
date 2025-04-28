@@ -61,6 +61,13 @@ open class EventViewModel(private val repository: EventRepository) : ViewModel()
         }
     }
 
+    val allEvents: StateFlow<List<EventWithCategories>> = repository.getAllEventWithCategoriesForUser(userId)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
     private val _user = MutableStateFlow<User?>(null)
     val user: StateFlow<User?> = _user
 

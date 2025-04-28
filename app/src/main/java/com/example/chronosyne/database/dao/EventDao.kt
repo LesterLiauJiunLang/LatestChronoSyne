@@ -38,4 +38,7 @@ interface EventDao {
     @Transaction
     @Query("SELECT * FROM events WHERE userId = :userId AND startTime > :cutoffDate")
     fun getEventsAfterDateWithCategories(userId: String, cutoffDate: Date): Flow<List<EventWithCategories>>
+
+    @Query("SELECT * FROM events WHERE userId = :userId ORDER BY startTime ASC")
+    fun getEventsWithCategoriesForUser(userId: String): Flow<List<EventWithCategories>>
 }
