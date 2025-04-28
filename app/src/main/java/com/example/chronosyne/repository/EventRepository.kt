@@ -52,6 +52,10 @@ open class EventRepository(
         eventDao.deleteEventById(eventId)
     }
 
+    fun getAllEventWithCategoriesForUser(userId: String): Flow<List<EventWithCategories>> {
+        return eventDao.getEventsWithCategoriesForUser(userId)
+    }
+
 
     open suspend fun insertEventWithCategory(event: Event, categoryName: String): Long {
         val category = crossRefDao.getCategoryByName(categoryName)

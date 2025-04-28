@@ -32,4 +32,9 @@ class FakeEventDao : EventDao {
         userId: String,
         cutoffDate: Date
     ): Flow<List<EventWithCategories>> = flow { emit(emptyList()) }
+
+    @Transaction
+    override fun getEventsWithCategoriesForUser(userId: String): Flow<List<EventWithCategories>> =
+        flow { emit(emptyList()) }
+
 }

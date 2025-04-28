@@ -104,11 +104,16 @@
             android:exported="true"
             android:theme="@style/Theme.ChronoSyne"/>
 
+
        <activity
            android:name=".NotificationActivity"
            android:exported="true"
-           android:theme="@style/Theme.ChronoSyne"
-           />
+           android:theme="@style/Theme.ChronoSyne"/>
+
+        <activity
+            android:name=".CalendarActivity"
+            android:exported="true"
+            android:theme="@style/Theme.ChronoSyne"/>
 
         <meta-data
             android:name="com.google.android.gms.version"
