@@ -18,9 +18,8 @@ class FakeEventDao : EventDao {
 
     override suspend fun updateEvent(event: Event) {}
 
-    override suspend fun deleteEvent(event: Event) {}
+    override suspend fun deleteEventById(eventId: Long) {} // <--- NEW, correct
 
-    // New methods for EventWithCategories
     @Transaction
     override fun getEventsBetweenDatesWithCategories(
         userId: String,

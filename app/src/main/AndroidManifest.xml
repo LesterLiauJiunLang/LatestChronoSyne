@@ -90,6 +90,16 @@
             android:theme="@style/Theme.ChronoSyne"/>
 
         <activity
+            android:name=".EventDetailActivity"
+            android:exported="true"
+            android:theme="@style/Theme.ChronoSyne"/>
+
+        <activity
+            android:name=".EditEventActivity"
+            android:exported="true"
+            android:theme="@style/Theme.ChronoSyne"/>
+
+        <activity
             android:name=".ProfileActivity"
             android:exported="true"
             android:theme="@style/Theme.ChronoSyne"/>

@@ -21,9 +21,13 @@ open class EventRepository(
     fun getEventsForUser(userId: String): Flow<List<Event>> =
         eventDao.getEventsForUser(userId)
 
-    suspend fun getEventWithCategories(eventId: Int): EventWithCategories {
-        val localData = crossRefDao.getEventWithCategories(eventId)
-        return localData
+    suspend fun getEventWithCategories(eventId: Long): EventWithCategories? {
+        val localData = crossRefDao.getEventWithCategories(eventId.toInt()) // FIX: Convert Long -> Int
+        return localData // Now the return types match too
+    }
+
+    suspend fun updateEvent(event: Event) {
+        eventDao.updateEvent(event)
     }
 
     suspend fun insertEvent(event: Event) {
@@ -44,23 +48,10 @@ open class EventRepository(
         } catch (_: Exception) {}
     }
 
-    suspend fun deleteEvent(event: Event) {
-        val currentUserId = auth.currentUser?.uid
-            ?: throw SecurityException("Not authenticated")
-
-        if (event.userId != currentUserId) {
-            throw SecurityException("Cannot delete other users' events")
-        }
-
-        eventDao.deleteEvent(event)
-
-        try {
-            firestore.collection("events")
-                .document(event.eventId.toString())
-                .delete()
-                .await()
-        } catch (_: Exception) {}
+    suspend fun deleteEventById(eventId: Long) {
+        eventDao.deleteEventById(eventId)
     }
+
 
     open suspend fun insertEventWithCategory(event: Event, categoryName: String): Long {
         val category = crossRefDao.getCategoryByName(categoryName)
@@ -82,4 +73,5 @@ open class EventRepository(
 
     fun getFutureEvents(userId: String, cutoffDate: Date): Flow<List<EventWithCategories>> =
         eventDao.getEventsAfterDateWithCategories(userId, cutoffDate)
+
 }

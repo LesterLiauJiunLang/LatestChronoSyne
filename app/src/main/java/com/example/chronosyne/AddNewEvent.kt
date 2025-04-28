@@ -164,7 +164,7 @@ fun AddNewEventScreen(eventViewModel: EventViewModel) {
                                 description = description.ifBlank { null },
                                 startTime = selectedDate, // Use selectedDate directly for startTime
                                 endTime = Date(selectedDate.time + 60_000), // Add 1 minute to endTime
-                                isAllDay = isAllDay,
+                                isAllDay = false,
                                 createdAt = Date(),
                                 updatedAt = Date(),
                                 location = null
@@ -280,27 +280,18 @@ fun AddNewEventScreen(eventViewModel: EventViewModel) {
 
             // Date and settings
             EventSettingRow(
-                icon = Icons.Default.DateRange,
-                text = "All-day",
+                icon = Icons.Default.Notifications,
+                text = "Enable Notification",
                 hasToggle = true,
-                initialToggleState = isAllDay,
-                onToggleChange = { isAllDay = it }
+                initialToggleState = enableNotification,
+                onToggleChange = { enableNotification = it }
             )
-
 
             EventSettingRow(
                 icon = Icons.Default.DateRange,
                 text = selectedDate.toString(),
                 hasToggle = false,
                 onClick = { showDatePicker = true }
-            )
-
-            EventSettingRow(
-                icon = Icons.Default.Notifications,
-                text = "Enable Notification",
-                hasToggle = true,
-                initialToggleState = enableNotification,
-                onToggleChange = { enableNotification = it }
             )
 
 

@@ -1,6 +1,5 @@
 package com.example.chronosyne.viewmodel
 
-import android.R.attr.category
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -56,8 +55,10 @@ open class EventViewModel(private val repository: EventRepository) : ViewModel()
         repository.insertEvent(event)
     }
 
-    fun deleteEvent(event: Event) = viewModelScope.launch {
-        repository.deleteEvent(event)
+    fun deleteEventById(eventId: Long) {
+        viewModelScope.launch {
+            repository.deleteEventById(eventId)
+        }
     }
 
     private val _user = MutableStateFlow<User?>(null)
@@ -77,5 +78,14 @@ open class EventViewModel(private val repository: EventRepository) : ViewModel()
     open suspend fun insertEventWithCategory(event: Event, category: String): Long{
         return repository.insertEventWithCategory(event, category)
     }
+
+    suspend fun getEventById(eventId: Long): Event? {
+        return repository.getEventWithCategories(eventId)?.event
+    }
+
+    suspend fun updateEvent(event: Event) {
+        repository.updateEvent(event)
+    }
+
 
 }

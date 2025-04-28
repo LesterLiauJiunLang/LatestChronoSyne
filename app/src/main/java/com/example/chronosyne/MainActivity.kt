@@ -1,17 +1,15 @@
 package com.example.chronosyne
 
 import android.app.AlarmManager
-import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -306,7 +304,13 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
                                 icon = iconPainter,
                                 title = eventWithCategories.event.title,
                                 date = "Date: ${eventWithCategories.event.startTime.formatAsDate()}",
-                                cardColor = cardColor
+                                cardColor = cardColor,
+                                onClick = {
+                                    val intent = Intent(context, EventDetailActivity::class.java).apply {
+                                        putExtra("EVENT_ID", eventWithCategories.event.eventId.toInt()) // Convert to Int
+                                    }
+                                    context.startActivity(intent)
+                                }
                             )
                         }
 
@@ -347,7 +351,13 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
                                 icon = iconPainter,
                                 title = eventWithCategories.event.title,
                                 date = "Date: ${eventWithCategories.event.startTime.formatAsDate()}",
-                                cardColor = cardColor
+                                cardColor = cardColor,
+                                onClick = {
+                                    val intent = Intent(context, EventDetailActivity::class.java).apply {
+                                        putExtra("EVENT_ID", eventWithCategories.event.eventId.toInt()) // Convert to Int
+                                    }
+                                    context.startActivity(intent)
+                                }
                             )
                         }
                 }
@@ -362,12 +372,14 @@ fun EventCard(
     icon: Painter,
     title: String,
     date: String,
-    cardColor: Color
+    cardColor: Color,
+    onClick: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 4.dp)
+            .clickable { onClick() },
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = cardColor)
     ) {

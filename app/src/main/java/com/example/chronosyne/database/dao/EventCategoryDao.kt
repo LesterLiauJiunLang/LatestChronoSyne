@@ -17,7 +17,7 @@ interface EventCategoryDao {
 
     @Transaction
     @Query("SELECT * FROM events WHERE eventId = :eventId")
-    suspend fun getEventWithCategories(eventId: Int): EventWithCategories
+    suspend fun getEventWithCategories(eventId: Int): EventWithCategories?
 
     @Transaction
     @Query("SELECT * FROM categories WHERE categoryId = :categoryId")
