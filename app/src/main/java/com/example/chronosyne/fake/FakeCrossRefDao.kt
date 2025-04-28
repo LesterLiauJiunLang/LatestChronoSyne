@@ -14,19 +14,18 @@ class FakeCrossRefDao : EventCategoryDao {
         // Add functionality here if needed
     }
 
-    override suspend fun getEventWithCategories(eventId: Int): EventWithCategories {
-        // Create a default Event object with necessary values
+    override suspend fun getEventWithCategories(eventId: Int): EventWithCategories? {
         val defaultEvent = Event(
             eventId = 0,
-            userId = "fakeUser",  // Example userId
+            userId = "fakeUser",
             title = "Default Event",
-            description = "Default Description",  // You can also set it to null if you want it optional
-            location = "Default Location",  // You can set this to null as well if optional
-            startTime = Date(),  // Current date as the start time (you can adjust this)
-            endTime = Date(),  // Current date as the end time (you can adjust this)
-            isAllDay = false,  // Default to not all day
-            createdAt = Date(),  // Current date as creation date
-            updatedAt = Date()  // Current date as the last updated date
+            description = "Default Description",
+            location = "Default Location",
+            startTime = Date(),
+            endTime = Date(),
+            isAllDay = false,
+            createdAt = Date(),
+            updatedAt = Date()
         )
 
         return EventWithCategories(event = defaultEvent, categories = emptyList())

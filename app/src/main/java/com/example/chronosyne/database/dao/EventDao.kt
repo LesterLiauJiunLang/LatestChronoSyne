@@ -22,13 +22,13 @@ interface EventDao {
     fun getEventsForUser(userId: String): Flow<List<Event>>
 
     @Query("SELECT * FROM events WHERE eventId = :eventId")
-    suspend fun getEventById(eventId: Int): Event?
+        suspend fun getEventById(eventId: Int): Event?
 
     @Update
     suspend fun updateEvent(event: Event)
 
-    @Delete
-    suspend fun deleteEvent(event: Event)
+    @Query("DELETE FROM events WHERE eventId = :eventId")
+    suspend fun deleteEventById(eventId: Long)
 
     // Unified range query (use for upcoming events)
     @Transaction
