@@ -86,14 +86,15 @@ fun NotificationScreen(
             .background(backgroundColor)
             .padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
-        Box(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp)
+                .padding(bottom = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             IconButton(
                 onClick = { onBackPressed() },
-                modifier = Modifier.align(Alignment.CenterStart)
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
@@ -106,13 +107,11 @@ fun NotificationScreen(
                 text = "Notifications",
                 color = textColor,
                 fontSize = 28.sp,
-                modifier = Modifier.align(Alignment.Center)
             )
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.align(Alignment.CenterEnd)
             ) {
                 IconButton(
                     onClick = { context.startActivity(Intent(context, SettingsActivity::class.java)) }
