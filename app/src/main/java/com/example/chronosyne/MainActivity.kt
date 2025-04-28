@@ -173,7 +173,6 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
                 .background(backgroundColor)
                 .padding(innerPadding)
         ) {
-            // Removed leaf decoration image to avoid reference error
 
             Column(
                 modifier = Modifier
@@ -216,28 +215,32 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
                             )
                         }
 
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(cardColor)
+                        IconButton(
+                            onClick = { context.startActivity(Intent(context, ProfileActivity::class.java)) }
                         ) {
-                            if (photoUrl != null) {
-                                AsyncImage(
-                                    model = photoUrl,
-                                    contentDescription = "Profile",
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Default.Person,
-                                    contentDescription = "Profile",
-                                    tint = Color.Black,
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .align(Alignment.Center)
-                                )
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(cardColor)
+                            ) {
+                                if (photoUrl != null) {
+                                    AsyncImage(
+                                        model = photoUrl,
+                                        contentDescription = "Profile",
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Default.Person,
+                                        contentDescription = "Profile",
+                                        tint = Color.Black,
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                            .align(Alignment.Center)
+                                    )
+                                }
                             }
                         }
                     }

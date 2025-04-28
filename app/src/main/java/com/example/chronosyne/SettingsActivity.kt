@@ -121,6 +121,10 @@ fun SettingsScreen(onBackPressed: () -> Unit, profilePhotoUrl: String? = Firebas
                 )
             }
 
+
+            IconButton(
+                onClick = { context.startActivity(Intent(context, ProfileActivity::class.java)) }
+            ) {
             Box(
                 modifier = Modifier
                     .size(36.dp)
@@ -144,6 +148,7 @@ fun SettingsScreen(onBackPressed: () -> Unit, profilePhotoUrl: String? = Firebas
                             .align(Alignment.Center)
                     )
                 }
+            }
             }
         }
     }
