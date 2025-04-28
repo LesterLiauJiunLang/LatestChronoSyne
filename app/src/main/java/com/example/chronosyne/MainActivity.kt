@@ -1,6 +1,10 @@
 package com.example.chronosyne
 
 import android.app.AlarmManager
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -75,6 +79,15 @@ import java.util.Date
 
 class MainActivity : ComponentActivity() {
     private val auth: FirebaseAuth = Firebase.auth
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permission granted. You can now show notifications.
+        } else {
+            // Permission denied. Maybe show a Toast or Warning if you want.
+        }
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -88,6 +101,16 @@ class MainActivity : ComponentActivity() {
         } else {
             // Check exact alarm permission FIRST
             checkExactAlarmPermission()
+
+            // ✅ REQUEST NOTIFICATION PERMISSION
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED
+                ) {
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+
             NotificationHelper.createNotificationChannel(this)
 
             // Initialize Room Database DAOs

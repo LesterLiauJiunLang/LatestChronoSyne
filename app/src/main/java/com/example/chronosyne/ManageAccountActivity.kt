@@ -3,6 +3,7 @@ package com.example.chronosyne
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -305,18 +306,23 @@ fun ManageAccountScreen(onBackPressed: () -> Unit, profilePhotoUrl: String? = Fi
             ) {
                 CoroutineScope(Dispatchers.IO).launch {
                     val success = userRepository.deleteUserAccount()
+                    Log.d("DeleteAccount", "Delete account success: $success") // Log the result
+
                     withContext(Dispatchers.Main) {
                         if (success) {
+                            Log.d("DeleteAccount", "Account deletion successful")
                             Toast.makeText(context, "Account deleted.", Toast.LENGTH_SHORT).show()
                             val intent = Intent(context, LoginActivity::class.java)
                             context.startActivity(intent)
                             (context as? Activity)?.finish()
                         } else {
+                            Log.e("DeleteAccount", "Deletion failed")
                             Toast.makeText(context, "Deletion failed.", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
             }
+
 
             AccountActionButton(
                 text = "Sign Out",

@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import coil.compose.AsyncImage
 import com.example.chronosyne.ui.theme.ChronoSyneTheme
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
 
@@ -67,11 +69,30 @@ fun ProfileScreen(onBackPressed: () -> Unit, profilePhotoUrl: String? = Firebase
     val cardColor = Color(0xFFb29985)
     val textColor = Color(0xFFb29985)
     val currentUser = Firebase.auth.currentUser
-    val name = currentUser?.displayName ?: "Unknown"
+    val name = remember { mutableStateOf("Loading...") }
     val email = currentUser?.email ?: "No email"
     val photoUrl = currentUser?.photoUrl
 
     val context = LocalContext.current
+
+    LaunchedEffect(currentUser?.uid) {
+        currentUser?.uid?.let { userId ->
+            Firebase.firestore.collection("users") // Assuming your users are stored in a "users" collection
+                .document(userId)
+                .get()
+                .addOnSuccessListener { document ->
+                    if (document != null) {
+                        val usernameFromFirestore = document.getString("username") // Assuming the field is called "username"
+                        name.value = usernameFromFirestore ?: "Unknown" // Use "Unknown" if the username field is not present
+                    } else {
+                        name.value = "Unknown"
+                    }
+                }
+                .addOnFailureListener {
+                    name.value = "Error loading username"
+                }
+        }
+    }
 
 
     Column(
@@ -177,11 +198,11 @@ fun ProfileScreen(onBackPressed: () -> Unit, profilePhotoUrl: String? = Firebase
                 Spacer(modifier = Modifier.height(32.dp))
 
                 // Name Section
-                ProfileItemSection(
-                    title = "Name",
-                    content = name,
-                    icon = Icons.Default.Person
-                )
+            ProfileItemSection(
+                title = "Username",  // Label for username
+                content = name.value,  // Display the fetched username
+                icon = Icons.Default.Person
+            )
 
                 // Email Section
                 ProfileItemSection(
