@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -419,11 +420,16 @@ fun InputDialog(
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit
 ) {
+    val textColor = Color(0xFFb29985)
+
     var inputText by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = title) },
+        title = {
+            Text(
+            text = title,
+            fontFamily = PlayfairFontFamily,) },
         text = {
             TextField(
                 value = inputText,
@@ -432,13 +438,23 @@ fun InputDialog(
             )
         },
         confirmButton = {
-            Button(onClick = { onConfirm(inputText) }) {
-                Text("Confirm")
+            Button(onClick = { onConfirm(inputText) },
+                    colors = ButtonDefaults.buttonColors(
+                    containerColor = textColor,
+                contentColor = Color.White
+            )) {
+                Text("Confirm",
+                    fontFamily = RalewayFontFamily,)
             }
         },
         dismissButton = {
-            Button(onClick = onDismiss) {
-                Text("Cancel")
+            Button(onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Red,
+                    contentColor = Color.White
+                )) {
+                Text("Cancel",
+                    fontFamily = RalewayFontFamily,)
             }
         }
     )

@@ -157,8 +157,8 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
                auth: FirebaseAuth = Firebase.auth
 ) {
     val backgroundColor = Color(0xFF1E1E1E)
-    val cardColor = Color(0xFFBEA99B)
-    val textColor = Color(0xFFBEA99B)
+    val cardColor = Color(0xFFb29985)
+    val textColor = Color(0xFFb29985)
     val currentUser = Firebase.auth.currentUser
     val userId = currentUser?.uid
 
@@ -214,6 +214,7 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
                     Text(
                         text = "Home",
                         color = textColor,
+                        fontFamily = PlayfairFontFamily,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -301,6 +302,7 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
                     text = "Upcoming Events",
                     color = textColor,
                     fontSize = 20.sp,
+                    fontFamily = PlayfairFontFamily,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
@@ -309,6 +311,7 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
                     Text(
                         text = "No upcoming events",
                         color = Color.Gray,
+                        fontFamily = RalewayFontFamily,
                         fontSize = 14.sp,
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
@@ -348,6 +351,7 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
                     text = "Future Events",
                     color = textColor,
                     fontSize = 20.sp,
+                    fontFamily = PlayfairFontFamily,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
@@ -356,6 +360,7 @@ fun HomeScreen(eventViewModel: EventViewModel = viewModel(),
                     Text(
                         text = "No future events",
                         color = Color.Gray,
+                        fontFamily = RalewayFontFamily,
                         fontSize = 14.sp,
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
@@ -427,12 +432,14 @@ fun EventCard(
                     text = title,
                     color = Color.Black,
                     fontWeight = FontWeight.Bold,
+                    fontFamily = RalewayFontFamily,
                     fontSize = 16.sp
                 )
 
                 Text(
                     text = date,
                     color = Color.Black,
+                    fontFamily = RalewayFontFamily,
                     fontSize = 14.sp
                 )
             }
@@ -468,6 +475,7 @@ fun BottomNavBar(backgroundColor: Color) {
                 )
                 Text(
                     text = "Calendar",
+                    fontFamily = PlayfairFontFamily,
                     fontSize = 12.sp
                 )
             }
@@ -490,6 +498,7 @@ fun BottomNavBar(backgroundColor: Color) {
                 )
                 Text(
                     text = "My Events",
+                    fontFamily = PlayfairFontFamily,
                     fontSize = 12.sp
                 )
             }

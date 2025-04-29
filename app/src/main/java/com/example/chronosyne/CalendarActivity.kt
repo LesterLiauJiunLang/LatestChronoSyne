@@ -96,6 +96,7 @@ fun MainCalendarScreen(eventViewModel: EventViewModel) {
                 title = {
                     Text(
                         text = "Calendar",
+                        fontFamily = PlayfairFontFamily,
                         color = textColor,
                         fontSize = 20.sp
                     )

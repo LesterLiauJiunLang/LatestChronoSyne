@@ -38,6 +38,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -59,6 +60,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -117,7 +119,7 @@ class AddNewEvent : ComponentActivity() {
 @Composable
 fun AddNewEventScreen(eventViewModel: EventViewModel) {
     val backgroundColor = Color(0xFF1E1E1E)
-    val buttonColor = Color(0xFFBEA99B)
+    val buttonColor = Color(0xFFb29985)
     val textColor = Color.White
     val context = LocalContext.current
 
@@ -219,11 +221,13 @@ fun AddNewEventScreen(eventViewModel: EventViewModel) {
                 onValueChange = { title = it },
                 label = { Text("Event Title", color = buttonColor) },
                 modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
                     focusedContainerColor = backgroundColor,
-                    unfocusedContainerColor = backgroundColor
+                    unfocusedContainerColor = backgroundColor,
+                    focusedBorderColor = colorResource(id = R.color.main_color),
+                    unfocusedBorderColor = colorResource(id = R.color.lighter_main_color)
                 )
             )
 
@@ -236,11 +240,13 @@ fun AddNewEventScreen(eventViewModel: EventViewModel) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(100.dp),
-                colors = TextFieldDefaults.colors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
                     focusedContainerColor = backgroundColor,
-                    unfocusedContainerColor = backgroundColor
+                    unfocusedContainerColor = backgroundColor,
+                    focusedBorderColor = colorResource(id = R.color.main_color),
+                    unfocusedBorderColor = colorResource(id = R.color.lighter_main_color)
                 )
 
             )
@@ -301,7 +307,7 @@ fun AddNewEventScreen(eventViewModel: EventViewModel) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = "Notify me",
-                        color = Color(0xFFBEA99B),
+                        color = Color(0xFFb29985),
                         fontSize = 16.sp,
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
@@ -314,15 +320,17 @@ fun AddNewEventScreen(eventViewModel: EventViewModel) {
                             readOnly = true,
                             value = selectedNotificationTiming,
                             onValueChange = {},
-                            label = { Text("Notification Timing", color = Color(0xFFBEA99B)) },
+                            label = { Text("Notification Timing", color = Color(0xFFb29985)) },
                             trailingIcon = {
                                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                             },
-                            colors = TextFieldDefaults.colors(
+                            colors = OutlinedTextFieldDefaults.colors(
                                 focusedTextColor = Color.White,
                                 unfocusedTextColor = Color.White,
                                 focusedContainerColor = backgroundColor,
-                                unfocusedContainerColor = backgroundColor
+                                unfocusedContainerColor = backgroundColor,
+                                focusedBorderColor = colorResource(id = R.color.main_color),
+                                unfocusedBorderColor = colorResource(id = R.color.lighter_main_color)
                             ),
                             modifier = Modifier
                                 .menuAnchor()
@@ -412,6 +420,9 @@ fun EventSettingRow(
     onToggleChange: ((Boolean) -> Unit)? = null,
     onClick: (() -> Unit)? = null
 ) {
+    val backgroundColor = Color(color = 0xFF282828 )
+    val textColor = Color(0xFFb29985)
+
     var isToggled by remember { mutableStateOf(initialToggleState) }
 
     Row(
@@ -426,7 +437,7 @@ fun EventSettingRow(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = Color(0xFFBEA99B),
+                tint = Color(0xFFb29985),
                 modifier = Modifier.size(24.dp)
             )
 
@@ -434,7 +445,7 @@ fun EventSettingRow(
 
             Text(
                 text = text,
-                color = Color(0xFFBEA99B),
+                color = Color(0xFFb29985),
                 fontSize = 16.sp
             )
         }
@@ -447,8 +458,11 @@ fun EventSettingRow(
                     onToggleChange?.invoke(it)
                 },
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = Color.White,
-                    checkedTrackColor = Color(0xFFBEA99B)
+                    uncheckedTrackColor = backgroundColor,
+                    uncheckedThumbColor = textColor.copy(alpha = 0.4f),
+                    checkedThumbColor = backgroundColor,    // Circle color when ON
+                    checkedTrackColor = textColor, // Track color when ON
+                    uncheckedBorderColor = textColor.copy(alpha = 0.4f) //
                 )
             )
         }

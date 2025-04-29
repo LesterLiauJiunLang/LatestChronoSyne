@@ -125,6 +125,7 @@ fun EventDetailScreen(eventViewModel: EventViewModel = viewModel()) {
                     Text(
                         "Event Details",
                         color = textColor,
+                        fontFamily = PlayfairFontFamily,
                         fontSize = 20.sp
                     )
                 },
@@ -163,7 +164,8 @@ fun EventDetailScreen(eventViewModel: EventViewModel = viewModel()) {
                     ),
                     shape = MaterialTheme.shapes.medium
                 ) {
-                    Text("Edit Event")
+                    Text("Edit Event",
+                        fontFamily = RalewayFontFamily,)
                 }
 
                 // Delete Event Button
@@ -176,7 +178,8 @@ fun EventDetailScreen(eventViewModel: EventViewModel = viewModel()) {
                     ),
                     shape = MaterialTheme.shapes.medium
                 ) {
-                    Text("Delete Event")
+                    Text("Delete Event",
+                        fontFamily = RalewayFontFamily,)
                 }
             }
 
@@ -184,8 +187,10 @@ fun EventDetailScreen(eventViewModel: EventViewModel = viewModel()) {
             if (showDialog) {
                 AlertDialog(
                     onDismissRequest = { showDialog = false },
-                    title = { Text("Confirm Deletion") },
-                    text = { Text("Are you sure you want to delete this event? This action cannot be undone.") },
+                    title = { Text("Confirm Deletion",
+                        fontFamily = PlayfairFontFamily,) },
+                    text = { Text("Are you sure you want to delete this event? This action cannot be undone.",
+                            fontFamily = RalewayFontFamily) },
                     confirmButton = {
                         Button(
                             onClick = {
@@ -207,7 +212,11 @@ fun EventDetailScreen(eventViewModel: EventViewModel = viewModel()) {
                     },
                     dismissButton = {
                         Button(
-                            onClick = { showDialog = false }
+                            onClick = { showDialog = false },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = textColor,
+                                contentColor = Color.White
+                            )
                         ) {
                             Text("Cancel")
                         }
@@ -274,11 +283,13 @@ fun DetailCard(title: String, content: String, cardColor: Color) {
                 text = title,
                 color = Color.Black,
                 fontSize = 14.sp,
+                fontFamily = PlayfairFontFamily,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text = content,
                 color = Color.Black,
+                fontFamily = RalewayFontFamily,
                 fontSize = 16.sp
             )
         }

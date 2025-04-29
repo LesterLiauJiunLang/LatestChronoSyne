@@ -92,7 +92,7 @@ fun ManageNotificationScreen(onBackPressed: () -> Unit, profilePhotoUrl: String?
                 text = "Notifications",
                 color = textColor,
                 fontFamily = PlayfairFontFamily,
-                fontSize = 28.sp,
+                fontSize = 25.sp,
                 modifier = Modifier.align(Alignment.Center)
             )
 
@@ -147,7 +147,6 @@ fun ManageNotificationScreen(onBackPressed: () -> Unit, profilePhotoUrl: String?
         )
 
 
-        // Buttons: Change Name / Email / Password
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             NotificationItem(title = "Show notifications")
             NotificationItem(title = "Allow Sound")

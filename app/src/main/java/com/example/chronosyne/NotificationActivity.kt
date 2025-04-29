@@ -86,15 +86,14 @@ fun NotificationScreen(
             .background(backgroundColor)
             .padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(bottom = 16.dp)
         ) {
             IconButton(
                 onClick = { onBackPressed() },
+                modifier = Modifier.align(Alignment.CenterStart)
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
@@ -106,12 +105,15 @@ fun NotificationScreen(
             Text(
                 text = "Notifications",
                 color = textColor,
-                fontSize = 28.sp,
+                fontSize = 25.sp,
+                fontFamily = PlayfairFontFamily,
+                modifier = Modifier.align(Alignment.Center)
             )
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.align(Alignment.CenterEnd)
             ) {
                 IconButton(
                     onClick = { context.startActivity(Intent(context, SettingsActivity::class.java)) }
@@ -158,6 +160,7 @@ fun NotificationScreen(
             text = "Upcoming Events",
             color = textColor,
             fontSize = 20.sp,
+            fontFamily = PlayfairFontFamily,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(vertical = 8.dp)
         )
@@ -167,6 +170,7 @@ fun NotificationScreen(
                 text = "No upcoming events",
                 color = Color.Gray,
                 fontSize = 14.sp,
+                fontFamily = RalewayFontFamily,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
         } else {
@@ -240,17 +244,20 @@ fun EventNotifCard(
                     text = title,
                     color = Color.Black,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
+                    fontFamily = RalewayFontFamily,
                 )
                 Text(
                     text = date,
                     color = Color.Black,
-                    fontSize = 14.sp
+                    fontSize = 14.sp,
+                    fontFamily = RalewayFontFamily,
                 )
                 Text(
                     text = remainingTime,
                     color = Color.DarkGray,
-                    fontSize = 12.sp
+                    fontSize = 12.sp,
+                    fontFamily = RobotoFontFamily,
                 )
             }
         }

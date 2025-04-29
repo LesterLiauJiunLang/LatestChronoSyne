@@ -105,6 +105,7 @@ fun MyEventScreen(
                 text = "My Events",
                 color = textColor,
                 fontSize = 28.sp,
+                fontFamily = PlayfairFontFamily,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.align(Alignment.Center)
             )
@@ -223,6 +224,7 @@ fun EventFilterChips(
             ) {
                 Text(
                     text = filter,
+                    fontFamily = PlayfairFontFamily,
                     fontSize = 14.sp
                 )
             }
@@ -256,6 +258,7 @@ fun FilteredEventList(
     if (filtered.isEmpty()) {
         Text(
             text = "No events found",
+            fontFamily = RalewayFontFamily,
             color = Color.Gray,
             fontSize = 14.sp,
             modifier = Modifier.padding(8.dp)
@@ -325,12 +328,14 @@ fun EventNotifCard(
                     text = title,
                     color = Color.Black,
                     fontWeight = FontWeight.Bold,
+                    fontFamily = RalewayFontFamily,
                     fontSize = 16.sp
                 )
 
                 Text(
                     text = date,
                     color = Color.Black,
+                    fontFamily = RalewayFontFamily,
                     fontSize = 14.sp
                 )
             }
